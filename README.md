@@ -60,7 +60,7 @@ See `unit-test.json` for a sample configuration with macros. Note that spaces ar
 
 ### Justification
 
-I wrote this service to familiarize myself with REST interface principles using the Flask framework. It serves as a way for me to send keyboard commands from my tablet to my desktop while playing flight simulators to manipulate the instrumentation. While many "serious" simulators already have interfaces like this for the DCS serious, I mostly play X-Wing Alliance and Mechwarrior 2 so I needed a more direct keyboard approach. This service might be useful for other such older games or situations where one needs to simulate keystrokes.
+I wrote this service to familiarize myself with REST interface principles using the Flask framework. It serves as a way for me to send keyboard commands from my tablet to my desktop while playing flight simulators to manipulate the instrumentation. While many "serious" simulators already have interfaces like this (such as DCS-BIOS for the DCS series), I mostly play X-Wing Alliance and Mechwarrior 2 so I needed a more direct keyboard approach. This service might be useful for other such older games or situations where one needs to simulate keystrokes.
 
 ### Acknowledgments
 
