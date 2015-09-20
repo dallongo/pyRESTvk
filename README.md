@@ -16,9 +16,9 @@ Macros are not checked for correct syntax when they are executed since the origi
 
 There is no exception handling for disk I/O errors and since documentation is sparse on win32api.keybd_event, there are no checks to see that the keystroke was successfully generated. The included test script will launch notepad and type a sentence, then cut and paste it, then quit notepad without saving changes. It provides a decent visual check that all pertinent keyboard macro types are functioning and will also check for proper HTTP responses for various REST calls.
 
-The service only uses basic HTTP authentication with no form of sessionization or cookies. The clients are not required to register at the /auth resource but it is helpful as it populates the client list on /clients.
+The service only uses basic HTTP authentication with no form of sessionization or cookies. The clients are not required to register at the `/auth` resource but it is helpful as it populates the client list on `/clients`.
 
-Windows does not allow sending protected commands like CTRL ALT DEL or WIN L to lock the station over the the win32api object.
+Windows does not allow sending protected commands like `[ CTRL ALT DEL ]` or `[ WIN L ]` to lock the station over the the win32api object.
 
 ### Releases
 #### 0.5
@@ -37,26 +37,26 @@ Install these packages and their dependencies on the client:
 
 ### Usage
 
-Run server.py on the Windows host where the keystrokes should be executed. Copy the resulting .auth_key file to the client. Run the unit-test.py on the client and make sure to change the IP address in the script to point to the Windows host. The script will upload the test configuration in unit-test.json and then open the Run dialog, run notepad, type a sentence, and exit notepad. Once the client is done it will issue a shutdown command to the service on the Windows host.
+Run `server.py` on the Windows host where the keystrokes should be executed. Copy the resulting `.auth_key` file to the client. Run the `unit-test.py` on the client and make sure to change the IP address in the script to point to the Windows host. The script will upload the test configuration in `unit-test.json` and then open the Run dialog, run notepad, type a sentence, and exit notepad. Once the client is done it will issue a shutdown command to the service on the Windows host.
 
 The service provides the following endpoints:
 
-* / - server status and summary with URLs to clients and configs resources
-* /auth - entry point for authenticated clients to register with the server
-* /clients - list of authenticated clients with URLs for each client resource
-* /clients/<client-name> - get client info
-* /configs - list of configurations with URLs for each config resource
-* /configs/<config-name> - exports this configuration to the client
-* /configs/<config-name>/macros/<macro-name> - executes the stored macro
-* /shutdown - calls for service shutdown
+* `/` - server status and summary with URLs to clients and configs resources
+* `/auth` - entry point for authenticated clients to register with the server
+* `/clients` - list of authenticated clients with URLs for each client resource
+* `/clients/<client-name>` - get client info
+* `/configs` - list of configurations with URLs for each config resource
+* `/configs/<config-name>` - exports this configuration to the client
+* `/configs/<config-name>/macros/<macro-name>` - executes the stored macro
+* `/shutdown` - calls for service shutdown
 
 The service uses the following files:
 
-* .auth_key - the HTTP authentication password. will be auto-generated on start up if it does not exist.
-* .configs - server's persistent cache of configs. will be created on the first config written to disk if it does not exist.
-* key_codes.json - list of all valid keys for macros. service will fail if it does not exist.
+* `.auth_key` - the HTTP authentication password. will be auto-generated on start up if it does not exist.
+* `.configs` - server's persistent cache of configs. will be created on the first config written to disk if it does not exist.
+* `key_codes.json` - list of all valid keys for macros. service will fail if it does not exist.
 
-See unit-test.json for a sample configuration with macros. Note that spaces are required between each token and between braces denoting button combination groups. Nesting groups is not permitted.
+See `unit-test.json` for a sample configuration with macros. Note that spaces are required between each token and between braces denoting button combination groups. Nesting groups is not permitted.
 
 ### Justification
 
