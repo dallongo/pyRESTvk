@@ -25,7 +25,7 @@
             "name":"file-menu"
         },
         {
-            "keys":"[ lshift t ] h i s space a n space [ rshift quote ] e x a m p l e [ rshift quote ] [ lshift 1 ]",
+            "keys":"[ lshift t ] h i s space i s space a n space [ rshift quote ] e x a m p l e [ rshift quote ] [ lshift 1 ]",
             "name":"type sentence"
         }
     ],
