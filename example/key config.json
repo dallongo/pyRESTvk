@@ -1,0 +1,473 @@
+{
+    "macros":[
+        {
+            "keys":"f1",
+            "name":"Target next friendly craft"
+        },
+        {
+            "keys":"[ shift f1 ]",
+            "name":"Target previous friendly craft"
+        },
+        {
+            "keys":"f2",
+            "name":"Target next neutral craft"
+        },
+        {
+            "keys":"[ shift f2 ]",
+            "name":"Target previous neutral craft"
+        },
+        {
+            "keys":"f3",
+            "name":"Target next enemy craft"
+        },
+        {
+            "keys":"[ shift f3 ]",
+            "name":"Target previous enemy craft"
+        },
+        {
+            "keys":"f5",
+            "name":"Select target preset 1 as target"
+        },
+        {
+            "keys":"[ shift f5 ]",
+            "name":"Save target in target preset 1"
+        },
+        {
+            "keys":"f6",
+            "name":"Select target preset 2 as target"
+        },
+        {
+            "keys":"[ shift f6 ]",
+            "name":"Save target in target preset 2"
+        },
+        {
+            "keys":"f7",
+            "name":"Select target preset 3 as target"
+        },
+        {
+            "keys":"[ shift f7 ]",
+            "name":"Save target in target preset 3"
+        },
+        {
+            "keys":"comma",
+            "name":"Cycle through targets components"
+        },
+        {
+            "keys":"[ shift comma ]",
+            "name":"Reverse cycle through targets components"
+        },
+        {
+            "keys":"a",
+            "name":"Target attacker of target"
+        },
+        {
+            "keys":"n",
+            "name":"Target next hyper buoy"
+        },
+        {
+            "keys":"o",
+            "name":"Target nearest objective craft"
+        },
+        {
+            "keys":"p",
+            "name":"Target nearest player craft"
+        },
+        {
+            "keys":"r",
+            "name":"Target nearest fighter"
+        },
+        {
+            "keys":"e",
+            "name":"Cycle through fighters targeting you"
+        },
+        {
+            "keys":"[ alt 3 ]",
+            "name":"Roll-Target ship in sights"
+        },
+        {
+            "keys":"i",
+            "name":"Target nearest incoming warhead"
+        },
+        {
+            "keys":"t",
+            "name":"Next target"
+        },
+        {
+            "keys":"y",
+            "name":"Previous target"
+        },
+        {
+            "keys":"u",
+            "name":"Target newest craft"
+        },
+        {
+            "keys":"[ alt 1 ]",
+            "name":"Pick target in sight"
+        },
+        {
+            "keys":"backspace",
+            "name":"Full throttle"
+        },
+        {
+            "keys":"[ shift plus ]",
+            "name":"Increase throttle"
+        },
+        {
+            "keys":"minus",
+            "name":"Decrease throttle"
+        },
+        {
+            "keys":"backslash",
+            "name":"Zero throttle"
+        },
+        {
+            "keys":"lbracket",
+            "name":"1-3 throttle"
+        },
+        {
+            "keys":"rbracket",
+            "name":"2-3 throttle"
+        },
+        {
+            "keys":"enter",
+            "name":"Match targeted crafts speed"
+        },
+        {
+            "keys":"[ shift f9 ]",
+            "name":"Transfer shield energy to lasers"
+        },
+        {
+            "keys":"[ shift f10 ]",
+            "name":"Transfer laser energy to shields"
+        },
+        {
+            "keys":"[ shift quote ]",
+            "name":"Transfer all laser energy to shields"
+        },
+        {
+            "keys":"f11",
+            "name":"Use power redirect preset 1"
+        },
+        {
+            "keys":"[ shift f11 ]",
+            "name":"Save power redirect preset 1"
+        },
+        {
+            "keys":"f12",
+            "name":"Use power redirect preset 2"
+        },
+        {
+            "keys":"[ shift f12 ]",
+            "name":"Save power redirect preset 2"
+        },
+        {
+            "keys":"f8",
+            "name":"Adjust beam recharge rate"
+        },
+        {
+            "keys":"f9",
+            "name":"Adjust laser recharge rate"
+        },
+        {
+            "keys":"f10",
+            "name":"Adjust shield recharge rate"
+        },
+        {
+            "keys":"s",
+            "name":"Cycle shield settings"
+        },
+        {
+            "keys":"v",
+            "name":"Toggle S-Foil"
+        },
+        {
+            "keys":"s s",
+            "name":"Shields Fore"
+        },
+        {
+            "keys":"s",
+            "name":"Shields Aft"
+        },
+        {
+            "keys":"f10",
+            "name":"Shield Recharge Increase"
+        },
+        {
+            "keys":"f10 f10 f10 f10",
+            "name":"Shield Recharge Decrease"
+        },
+        {
+            "keys":"f9",
+            "name":"Laser Recharge Increase"
+        },
+        {
+            "keys":"f9 f9 f9 f9",
+            "name":"Laser Recharge Decrease"
+        },
+        {
+            "keys":"f8",
+            "name":"Beam Recharge Increase"
+        },
+        {
+            "keys":"f8 f8 f8 f8",
+            "name":"Beam Recharge Decrease"
+        },
+        {
+            "keys":"esc",
+            "name":"Options screen"
+        },
+        {
+            "keys":"[ alt d ]",
+            "name":"Cycle graphics detail settings"
+        },
+        {
+            "keys":"[ alt b ]",
+            "name":"Cycle brightness settings"
+        },
+        {
+            "keys":"[ alt p ]",
+            "name":"Pause game"
+        },
+        {
+            "keys":"q",
+            "name":"Quit mission"
+        },
+        {
+            "keys":"[ alt v ]",
+            "name":"Displays game version"
+        },
+        {
+            "keys":"[ alt s ]",
+            "name":"Toggle system messages on-off"
+        },
+        {
+            "keys":"[ alt c ]",
+            "name":"Clear CMD"
+        },
+        {
+            "keys":"del",
+            "name":"Toggle left MFD"
+        },
+        {
+            "keys":"pgdn",
+            "name":"Toggle right MFD"
+        },
+        {
+            "keys":"end",
+            "name":"Toggle CMD"
+        },
+        {
+            "keys":"home",
+            "name":"Center indicators"
+        },
+        {
+            "keys":"ins",
+            "name":"Toggle Left Sensor-Shield Indicator"
+        },
+        {
+            "keys":"pgup",
+            "name":"Toggle Right Sensor-Beam Indicator"
+        },
+        {
+            "keys":"period",
+            "name":"Toggle cockpit on-off"
+        },
+        {
+            "keys":"numpad_slash",
+            "name":"External camera mode"
+        },
+        {
+            "keys":"numpad_star",
+            "name":"Reposition camera in external mode"
+        },
+        {
+            "keys":"scroll_lock",
+            "name":"Toggle mouse look mode"
+        },
+        {
+            "keys":"numpad_2",
+            "name":"Virtual cockpit look down"
+        },
+        {
+            "keys":"numpad_4",
+            "name":"Virtual cockpit look left"
+        },
+        {
+            "keys":"numpad_6",
+            "name":"Virtual cockpit look right"
+        },
+        {
+            "keys":"numpad_8",
+            "name":"Virtual cockpit look up"
+        },
+        {
+            "keys":"[ alt u ]",
+            "name":"Target camera mode"
+        },
+        {
+            "keys":"l",
+            "name":"Toggle padlock view on-off"
+        },
+        {
+            "keys":"[ alt j ]",
+            "name":"Flyby camera mode"
+        },
+        {
+            "keys":"[ alt n ]",
+            "name":"Missile camera mode"
+        },
+        {
+            "keys":"g",
+            "name":"Toggle pilot-turret position"
+        },
+        {
+            "keys":"m",
+            "name":"Map mode"
+        },
+        {
+            "keys":"1",
+            "name":"Wingman command screen option 1"
+        },
+        {
+            "keys":"2",
+            "name":"Wingman command screen option 2"
+        },
+        {
+            "keys":"3",
+            "name":"Wingman command screen option 3"
+        },
+        {
+            "keys":"4",
+            "name":"Wingman command screen option 4"
+        },
+        {
+            "keys":"5",
+            "name":"Wingman command screen option 5"
+        },
+        {
+            "keys":"6",
+            "name":"Wingman command screen option 6"
+        },
+        {
+            "keys":"7",
+            "name":"Wingman command screen option 7"
+        },
+        {
+            "keys":"8",
+            "name":"Wingman command screen option 8"
+        },
+        {
+            "keys":"9",
+            "name":"Wingman command screen option 9"
+        },
+        {
+            "keys":"[ shift a ]",
+            "name":"Assign target to wingmen"
+        },
+        {
+            "keys":"[ shift c ]",
+            "name":"Order wingmen to cover you"
+        },
+        {
+            "keys":"tab",
+            "name":"Bring up wingman command screen in MFD"
+        },
+        {
+            "keys":"space",
+            "name":"Confirm critical orders"
+        },
+        {
+            "keys":"[ shift i ]",
+            "name":"Order wingmen to ignore target"
+        },
+        {
+            "keys":"[ shift e ]",
+            "name":"Order targeted craft to evade"
+        },
+        {
+            "keys":"[ shift g ]",
+            "name":"Order waiting craft to go"
+        },
+        {
+            "keys":"[ shift h ]",
+            "name":"Order targeted craft to go home"
+        },
+        {
+            "keys":"[ shift w ]",
+            "name":"Order craft to stop-wait"
+        },
+        {
+            "keys":"[ shift s ]",
+            "name":"Call for reinforcements"
+        },
+        {
+            "keys":"[ shift b ]",
+            "name":"Signal re-supply ship"
+        },
+        {
+            "keys":"[ alt 2 ]",
+            "name":"Fire weapon"
+        },
+        {
+            "keys":"c",
+            "name":"Fire countermeasure"
+        },
+        {
+            "keys":"f",
+            "name":"Toggle turret automatic firing"
+        },
+        {
+            "keys":"b",
+            "name":"Beam weapon on-off"
+        },
+        {
+            "keys":"w",
+            "name":"Cycle weapon settings"
+        },
+        {
+            "keys":"x",
+            "name":"Cycle firing settings"
+        },
+        {
+            "keys":"z",
+            "name":"Toggle laser convergence"
+        },
+        {
+            "keys":"[ shift 1 ]",
+            "name":"Custom Taunt 1"
+        },
+        {
+            "keys":"[ shift 2 ]",
+            "name":"Custom Taunt 2"
+        },
+        {
+            "keys":"[ shift 3 ]",
+            "name":"Custom Taunt 3"
+        },
+        {
+            "keys":"[ shift 4 ]",
+            "name":"Custom Taunt 4"
+        },
+        {
+            "keys":"j",
+            "name":"Jump to new craft if available"
+        },
+        {
+            "keys":"[ shift d ]",
+            "name":"Dock with targeted craft"
+        },
+        {
+            "keys":"[ shift p ]",
+            "name":"Pick up targeted craft"
+        },
+        {
+            "keys":"[ shift r ]",
+            "name":"Release carried object"
+        },
+        {
+            "keys":"[ alt e ]",
+            "name":"Eject"
+        }
+    ],
+    "name":"X-Wing Alliance"
+}

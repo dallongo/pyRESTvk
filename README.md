@@ -20,7 +20,13 @@ The service only uses basic HTTP authentication with no form of sessionization o
 
 Windows does not allow sending protected commands like `[ CTRL ALT DEL ]` or `[ WIN L ]` to lock the station over the the win32api object.
 
+Please note that `config` and `macro` names cannot include HTTP [reserved] characters.
+
 ### Releases
+#### 0.5.1
+Fixed `key_codes` not initialized before `read_configs` in `server.py`
+Added example kivy app in `/example`
+
 #### 0.5
 Initial release
 
@@ -58,6 +64,8 @@ The service uses the following files:
 
 See `unit-test.json` for a sample configuration with macros. Note that spaces are required between each token and between braces denoting button combination groups. Nesting groups is not permitted.
 
+A typical client application using [kivy] as a frontend is available in `/example`.
+
 ### Justification
 
 I wrote this service to familiarize myself with REST interface principles using the Flask framework. It serves as a way for me to send keyboard commands from my tablet to my desktop while playing flight simulators to manipulate the instrumentation. While many "serious" simulators already have interfaces like this (such as DCS-BIOS for the DCS series), I mostly play X-Wing Alliance and Mechwarrior 2 so I needed a more direct keyboard approach. This service might be useful for other such older games or situations where one needs to simulate keystrokes.
@@ -76,6 +84,8 @@ The following code snippets were helpful in writing pyRESTvk:
 [Flask]: <http://flask.pocoo.org/>
 [pywin32]: <http://sourceforge.net/projects/pywin32/files/>
 [requests]: <http://www.python-requests.org/>
+[reserved]: <https://en.wikipedia.org/wiki/Percent-encoding#Percent-encoding_reserved_characters>
+[kivy]: <http://kivy.org/>
 [win32api-snippet]: <https://gist.github.com/chriskiehl/2906125>
 [shutdown-snippet]: <http://flask.pocoo.org/snippets/67/>
 [json-snippet]: <http://flask.pocoo.org/snippets/83/>
