@@ -20,7 +20,7 @@ import time
 server_port = 5000
 
 # server changes that affect endpoint functionality or break test script should increment api version.
-app_version = 0.5
+app_version = '0.5.1'
 api_version = 1
 
 # server status and clients/configs summary.
@@ -122,9 +122,6 @@ def read_configs():
 				configs.append(c)
 	return configs
 
-configs_file = os.path.join(os.path.dirname(__file__),'.configs')
-configs = read_configs()
-
 # reads key codes from file.
 def read_key_codes():
 	codes = None
@@ -138,6 +135,9 @@ def read_key_codes():
 key_codes = read_key_codes()
 key_duration = 0.025
 key_combo_seps = {'open':'[', 'close':']'}
+
+configs_file = os.path.join(os.path.dirname(__file__),'.configs')
+configs = read_configs()
 
 # simulate key presses for given key codes.
 def press_keys(keys=[]):
