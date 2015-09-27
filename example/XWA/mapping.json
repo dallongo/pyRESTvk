@@ -1,0 +1,82 @@
+{
+     "top_1":{
+		"label":"Options",
+		"macro":"Options screen"
+		},
+     "top_2":{
+		"label":"Pause",
+		"macro":"Pause game"
+		},
+     "top_3":{
+		"label":"Sys Msg",
+		"macro":"Toggle system messages on-off"
+		},
+     "top_4":{
+		"label":"Version",
+		"macro":"Displays game version"
+		},
+     "top_5":{
+		"label":"Quit",
+		"macro":"Quit mission"
+		},
+     "left_1":{
+		"label":"Shield +",
+		"macro":"Shield Recharge Increase"
+        },
+     "left_2":{
+		"label":"Shield -",
+		"macro":"Shield Recharge Decrease"
+		},
+     "left_3":{
+		"label":"Shld->Lasr",
+		"macro":"Transfer shield energy to lasers"
+		},
+     "left_4":{
+		"label":"Shield F",
+		"macro":"Shields Fore"
+		},
+     "left_5":{
+		"label":"Shield R",
+		"macro":"Shields Aft"
+		},
+     "right_1":{
+		"label":"Laser +",
+		"macro":"Laser Recharge Increase"
+		},
+     "right_2":{
+		"label":"Laser -",
+		"macro":"Laser Recharge Decrease"
+		},
+     "right_3":{
+		"label":"Lasr->Shld",
+		"macro":"Transfer laser energy to shields"
+		},
+     "right_4":{
+		"label":"Beam +",
+		"macro":"Beam Recharge Increase"
+		},
+     "right_5":{
+		"label":"Beam -",
+		"macro":"Beam Recharge Decrease"
+		},
+     "bottom_1":{
+		"label":"L Sensor",
+		"macro":"Toggle Left Sensor-Shield Indicator"
+		},
+     "bottom_2":{
+		"label":"L MFD",
+		"macro":"Toggle left MFD"
+		},
+     "bottom_3":{
+		"label":"CMD",
+		"macro":"Toggle CMD"
+		},
+     "bottom_4":{
+		"label":"R MFD",
+		"macro":"Toggle right MFD"
+		},
+     "bottom_5":{
+		"label":"ACK",
+		"macro":"Confirm critical orders"
+		}
+}
