@@ -2,7 +2,6 @@
 
 <MFD>:
     GridLayout:
-        id: test
         rows: 7
         columns: 7
         spacing: 16
@@ -11,62 +10,49 @@
             text: ''
 
         Button:
-            id: A
-            text: 'MENU'
-            on_press: root.make_request(self)
+            id: top_1
+            text: ''
+            color: [0, 1, 0, 1]
+			on_press: root.make_request(self)
+            background_down: 'atlas://data/images/defaulttheme/button_disabled'
 
         Button:
-            id: B
-            text: 'PAUSE'
-            on_press: root.make_request(self)
+            id: top_2
+            text: ''
+            color: [0, 1, 0, 1]
+			on_press: root.make_request(self)
+			background_down: 'atlas://data/images/defaulttheme/button_disabled'
 
         Button:
-            id: C
-            text: 'SYS LOG'
-            on_press: root.make_request(self)
+            id: top_3
+            text: ''
+            color: [0, 1, 0, 1]
+			on_press: root.make_request(self)
+			background_down: 'atlas://data/images/defaulttheme/button_disabled'
 
         Button:
-            id: D
-            text: 'VERSION'
-            on_press: root.make_request(self)
+            id: top_4
+            text: ''
+            color: [0, 1, 0, 1]
+			on_press: root.make_request(self)
+			background_down: 'atlas://data/images/defaulttheme/button_disabled'
 
         Button:
-            id: E
-            text: 'QUIT'
-            on_press: root.make_request(self)
+            id: top_5
+            text: ''
+            color: [0, 1, 0, 1]
+			on_press: root.make_request(self)
+			background_down: 'atlas://data/images/defaulttheme/button_disabled'
 
         Label:
             text: ''
 
         Button:
-            id: T
-            text: 'SHIELD+'
-            on_press: root.make_request(self)
-
-        Label:
+            id: left_1
             text: ''
-
-        Label:
-            text: ''
-
-        Label:
-            text: ''
-
-        Label:
-            text: ''
-
-        Label:
-            text: ''
-
-        Button:
-            id: F
-            text: 'LASER+'
-            on_press: root.make_request(self)
-
-        Button:
-            id: S
-            text: 'SHIELD-'
-            on_press: root.make_request(self)
+            color: [0, 1, 0, 1]
+			on_press: root.make_request(self)
+			background_down: 'atlas://data/images/defaulttheme/button_disabled'
 
         Label:
             text: ''
@@ -84,39 +70,18 @@
             text: ''
 
         Button:
-            id: G
-            text: 'LASER-'
-            on_press: root.make_request(self)
+            id: right_1
+            text: ''
+            color: [0, 1, 0, 1]
+			on_press: root.make_request(self)
+			background_down: 'atlas://data/images/defaulttheme/button_disabled'
 
         Button:
-            id: R
-            text: 'S->L'
-            on_press: root.make_request(self)
-
-        Label:
+            id: left_2
             text: ''
-
-        Label:
-            text: ''
-
-        Label:
-            text: ''
-
-        Label:
-            text: ''
-
-        Label:
-            text: ''
-
-        Button:
-            id: H
-            text: 'L->S'
-            on_press: root.make_request(self)
-
-        Button:
-            id: Q
-            text: 'SHIELD>'
-            on_press: root.make_request(self)
+            color: [0, 1, 0, 1]
+			on_press: root.make_request(self)
+			background_down: 'atlas://data/images/defaulttheme/button_disabled'
 
         Label:
             text: ''
@@ -134,14 +99,18 @@
             text: ''
 
         Button:
-            id: I
-            text: 'BEAM+'
-            on_press: root.make_request(self)
+            id: right_2
+            text: ''
+            color: [0, 1, 0, 1]
+			on_press: root.make_request(self)
+			background_down: 'atlas://data/images/defaulttheme/button_disabled'
 
         Button:
-            id: P
-            text: '<SHIELD'
-            on_press: root.make_request(self)
+            id: left_3
+            text: ''
+            color: [0, 1, 0, 1]
+			on_press: root.make_request(self)
+			background_down: 'atlas://data/images/defaulttheme/button_disabled'
 
         Label:
             text: ''
@@ -159,37 +128,107 @@
             text: ''
 
         Button:
-            id: J
-            text: 'BEAM-'
-            on_press: root.make_request(self)
+            id: right_3
+            text: ''
+            color: [0, 1, 0, 1]
+			on_press: root.make_request(self)
+			background_down: 'atlas://data/images/defaulttheme/button_disabled'
+
+        Button:
+            id: left_4
+            text: ''
+            color: [0, 1, 0, 1]
+			on_press: root.make_request(self)
+			background_down: 'atlas://data/images/defaulttheme/button_disabled'
+
+        Label:
+            text: ''
+
+        Label:
+            text: ''
+
+        Label:
+            text: ''
+
+        Label:
+            text: ''
 
         Label:
             text: ''
 
         Button:
-            id: O
-            text: 'SENSOR'
-            on_press: root.make_request(self)
+            id: right_4
+            text: ''
+            color: [0, 1, 0, 1]
+			on_press: root.make_request(self)
+			background_down: 'atlas://data/images/defaulttheme/button_disabled'
 
         Button:
-            id: N
-            text: 'L MFD'
-            on_press: root.make_request(self)
+            id: left_5
+            text: ''
+            color: [0, 1, 0, 1]
+			on_press: root.make_request(self)
+			background_down: 'atlas://data/images/defaulttheme/button_disabled'
+
+        Label:
+            text: ''
+
+        Label:
+            text: ''
+
+        Label:
+            text: ''
+
+        Label:
+            text: ''
+
+        Label:
+            text: ''
 
         Button:
-            id: M
-            text: 'CMD'
-            on_press: root.make_request(self)
+            id: right_5
+            text: ''
+            color: [0, 1, 0, 1]
+			on_press: root.make_request(self)
+			background_down: 'atlas://data/images/defaulttheme/button_disabled'
+
+        Label:
+            text: ''
 
         Button:
-            id: L
-            text: 'R MFD'
-            on_press: root.make_request(self)
+            id: bottom_1
+            text: ''
+            color: [0, 1, 0, 1]
+			on_press: root.make_request(self)
+			background_down: 'atlas://data/images/defaulttheme/button_disabled'
 
         Button:
-            id: K
-            text: 'ACK'
-            on_press: root.make_request(self)
+            id: bottom_2
+            text: ''
+            color: [0, 1, 0, 1]
+			on_press: root.make_request(self)
+			background_down: 'atlas://data/images/defaulttheme/button_disabled'
+
+        Button:
+            id: bottom_3
+            text: ''
+            color: [0, 1, 0, 1]
+			on_press: root.make_request(self)
+			background_down: 'atlas://data/images/defaulttheme/button_disabled'
+
+        Button:
+            id: bottom_4
+            text: ''
+            color: [0, 1, 0, 1]
+			on_press: root.make_request(self)
+			background_down: 'atlas://data/images/defaulttheme/button_disabled'
+
+        Button:
+            id: bottom_5
+            text: ''
+            color: [0, 1, 0, 1]
+			on_press: root.make_request(self)
+			background_down: 'atlas://data/images/defaulttheme/button_disabled'
 
         Label:
             text: ''
