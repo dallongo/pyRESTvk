@@ -23,9 +23,17 @@ Windows does not allow sending protected commands like `[ CTRL ALT DEL ]` or `[ 
 Please note that `config` and `macro` names cannot include HTTP [reserved] characters.
 
 ### Releases
+#### 0.5.2
+Testing script and json moved to `unit-test/`
+Changed `__file__` references to `sys.argv[0]` so that `server.py` will compile with `py2exe`
+Added `setup.py` to allow `server.py` to compile with `py2exe`
+Cleanup `example/main.py` and move button labels from `MFD.kv` to `mapping_file`
+Various minor cosmetic changes
+First binary release for compiled `server.py` and `example/main.py`
+
 #### 0.5.1
 Fixed `key_codes` not initialized before `read_configs` in `server.py`
-Added example kivy app in `/example`
+Added example kivy app in `example/`
 
 #### 0.5
 Initial release
@@ -43,7 +51,7 @@ Install these packages and their dependencies on the client:
 
 ### Usage
 
-Run `server.py` on the Windows host where the keystrokes should be executed. Copy the resulting `.auth_key` file to the client. Run the `unit-test.py` on the client and make sure to change the IP address in the script to point to the Windows host. The script will upload the test configuration in `unit-test.json` and then open the Run dialog, run notepad, type a sentence, and exit notepad. Once the client is done it will issue a shutdown command to the service on the Windows host.
+Run `server.py` on the Windows host where the keystrokes should be executed. Copy the resulting `.auth_key` file to the client. Run the `unit-test/unit-test.py` on the client and make sure to change the IP address in the script to point to the Windows host. The script will upload the test configuration in `unit-test/unit-test.json` and then open the Run dialog, run notepad, type a sentence, and exit notepad. Once the client is done it will issue a shutdown command to the service on the Windows host.
 
 The service provides the following endpoints:
 
@@ -62,9 +70,11 @@ The service uses the following files:
 * `.configs` - server's persistent cache of configs. will be created on the first config written to disk if it does not exist.
 * `key_codes.json` - list of all valid keys for macros. service will fail if it does not exist.
 
-See `unit-test.json` for a sample configuration with macros. Note that spaces are required between each token and between braces denoting button combination groups. Nesting groups is not permitted.
+See `unit-test/unit-test.json` for a sample configuration with macros. Note that spaces are required between each token and between braces denoting button combination groups. Nesting groups is not permitted.
 
-A typical client application using [kivy] as a frontend is available in `/example`.
+A typical client application using [kivy] as a frontend is available in `example/`.
+
+Compiled binaries are available for releases but generally these are untested and messy, use at your own risk. Running `server.exe` will start the service on the default port (5000) and start listening on all available network interfaces.
 
 ### Justification
 
