@@ -15,18 +15,19 @@ import json
 import win32api
 import win32con
 import time
+import sys
 
 # default port for flask
 server_port = 5000
 
 # server changes that affect endpoint functionality or break test script should increment api version.
-app_version = '0.5.1'
+app_version = '0.5.2'
 api_version = 1
 
 # server status and clients/configs summary.
 status = {
 	'application':{
-		'name':os.path.basename(__file__),
+		'name':os.path.basename(sys.argv[0]),
 		'version':app_version,
 		'api':api_version
 	},
@@ -45,7 +46,7 @@ clients = []
 # checks for auth key and creates one if needed.
 def read_auth_key():
 	key = None
-	key_file = os.path.join(os.path.dirname(__file__),'.auth_key')
+	key_file = os.path.join(os.path.dirname(sys.argv[0]),'.auth_key')
 	if os.path.isfile(key_file) and os.path.getsize(key_file) > 0:
 		f  = open(key_file)
 		key = f.readline().rstrip()
@@ -125,7 +126,7 @@ def read_configs():
 # reads key codes from file.
 def read_key_codes():
 	codes = None
-	codes_file = os.path.join(os.path.dirname(__file__),'key_codes.json')
+	codes_file = os.path.join(os.path.dirname(sys.argv[0]),'key_codes.json')
 	if os.path.isfile(codes_file) and os.path.getsize(codes_file) > 0:
 		f  = open(codes_file)
 		codes = json.loads(f.read())
@@ -136,7 +137,7 @@ key_codes = read_key_codes()
 key_duration = 0.025
 key_combo_seps = {'open':'[', 'close':']'}
 
-configs_file = os.path.join(os.path.dirname(__file__),'.configs')
+configs_file = os.path.join(os.path.dirname(sys.argv[0]),'.configs')
 configs = read_configs()
 
 # simulate key presses for given key codes.
