@@ -1,0 +1,7 @@
+{
+	"server_url" : "http://127.0.0.1:5000",
+	"auth_file" : ".auth_key",
+	"api" : "1",
+	"mappings_file" : "XWA/mapping.json",
+	"config_file" : "XWA/config.json"
+}

@@ -4,79 +4,86 @@
 # A sample client program using kivy to create a button interface with the 
 # widget event handlers calling the pyRESTvk service.
 
-import kivy
-kivy.require('1.9.0')
 from kivy.uix.floatlayout import FloatLayout
 from kivy.app import App
-import requests
+from requests import Session, adapters
+from distutils.version import LooseVersion
 import json
 import platform
-import os
-
-# default host and port
-server_ip = '127.0.0.1'
-server_port = 5000
-base_url = 'http://' + server_ip + ':' + str(server_port)
-# using this API version
-api_version = 1
-# pass hostname as username
-username = platform.node()
-# get password from key file
-f = open(os.path.join(os.path.dirname(__file__),'.auth_key'))
-password = f.readline().rstrip()
-f.close()
-# set correct request headers
-headers = {
-    'X-Requested-With':'XMLHttpRequest',
-    'Accept':'application/json',
-    'Content-Type':'application/json'
-}
-# load the macro config for this application
-f = open(os.path.join(os.path.dirname(__file__),'key config.json'))
-key_config = json.loads(f.read())
-f.close()
-# load the kivy button mappings for the macros
-f = open(os.path.join(os.path.dirname(__file__),'button mappings.json'))
-button_mappings = json.loads(f.read())
-f.close()
-# session will send auth and headers for subsequent requests
-s = requests.Session()
-s.auth=(username,password)
-s.headers.update(headers)
-# authenticate and register client
-r = s.get(base_url + '/auth')
-assert r.status_code == 200
-# confirm server api version
-r = s.get(base_url)
-assert r.json()['application']['api'] == api_version
-# get resource URLs
-r = s.get(base_url)
-# get configs resource
-configs_url = r.json()['configs']['url']
-r = s.get(configs_url)
-# find and update config if it exists
-config = filter(lambda x: x['name'] == key_config['name'], r.json()['configs'])
-config_url = ''
-if config:
-    config = config.pop()
-    config_url = config['url']
-    r = s.get(config_url)
-    if r.json() != key_config:
-        r = s.put(config_url, json=key_config)
-        assert r.status_code == 204
-else:
-    r = s.post(configs_url, json=key_config)
-    assert r.status_code == 201
-    config_url = r.headers['location']
+import os.path
+import sys
 
 
 class MFD(FloatLayout):
+    def __init__(self, mappings_file, config_file, auth_file, server_url, api):
+        FloatLayout.__init__(self)
+        # load the kivy button mappings for the macros
+        f = open(mappings_file)
+        self.mappings = json.loads(f.read())
+        f.close()
+        # apply button labels
+        for id_str, widget in self.ids.iteritems():
+            if id_str in self.mappings and self.mappings[id_str]['label']:
+                self.ids[id_str].text = self.mappings[id_str]['label']
+        # load the macro config for this application
+        f = open(config_file)
+        self.config = json.loads(f.read())
+        f.close()
+        # pass hostname as username
+        username = platform.node()
+        # get password from key file
+        f = open(auth_file)
+        password = f.readline().rstrip()
+        f.close()
+        # session will send auth and headers for requests, retry up to 3x
+        self.s = Session()
+        self.s.mount("http://", adapters.HTTPAdapter(max_retries=3))
+        self.s.auth=(username, password)
+        self.s.headers.update({
+            'X-Requested-With':'XMLHttpRequest',
+            'Accept':'application/json',
+            'Content-Type':'application/json'
+        })
+        self.server_url = server_url
+        self.api = api
+        # authenticate and register client
+        r = self.s.get(self.server_url + '/auth', timeout=5)
+        assert r.status_code == 200
+        # confirm server api version
+        r = self.s.get(self.server_url, timeout=5)
+        assert LooseVersion(str(r.json()['application']['api'])) >= LooseVersion(str(self.api))
+        # get resource URLs
+        r = self.s.get(self.server_url, timeout=5)
+        configs_url = r.json()['configs']['url']
+        r = self.s.get(configs_url, timeout=5)
+        # find and update config if it exists
+        c = filter(lambda x: x['name'] == self.config['name'], r.json()['configs'])
+        config_url = ''
+        if c:
+            c = c.pop()
+            config_url = c['url']
+            r = self.s.get(config_url, timeout=5)
+            if r.json() != self.config:
+                r = self.s.put(config_url, json=self.config, timeout=5)
+                assert r.status_code == 204
+        else:
+            r = self.s.post(configs_url, json=self.config, timeout=5)
+            assert r.status_code == 201
+            config_url = r.headers['location']
+        self.config_url = config_url
+        return
+
+    def shutdown(self):
+        # call server shutdown
+        self.s.get(self.server_url + '/shutdown', timeout=5)
+        return
+
     def make_request(self, btn):
-        global mappings, s, config_url
         for id_str, widget in self.ids.iteritems():
             if widget == btn:
-                if id_str in button_mappings and button_mappings[id_str]:
-                    r = s.get(config_url + '/macros/' + button_mappings[id_str])
+                if id_str in self.mappings and self.mappings[id_str]['macro']:
+                    # run macro
+                    r = self.s.get(self.config_url + '/macros/' + self.mappings[id_str]['macro'], timeout=5)
                     assert r.status_code == 200
                 break
         return
@@ -84,10 +91,20 @@ class MFD(FloatLayout):
 
 class MFDApp(App):
     def build(self):
-        return MFD()
+        # get client settings
+        f = open(os.path.join(os.path.dirname(sys.argv[0]),'settings.json'))
+        settings = json.loads(f.read())
+        f.close()
+        for k in settings:
+            if k.endswith('_file'):
+                # all file paths are relative to this one
+                settings[k] = os.path.join(os.path.dirname(sys.argv[0]),settings[k])        
+        return MFD(**settings)
+
+    def on_stop(self):
+        self.root.shutdown()
+        return
 
 
 if __name__ == '__main__':
-    global s, base_url
     MFDApp().run()
-    r = s.get(base_url + '/shutdown')
