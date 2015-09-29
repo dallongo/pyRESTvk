@@ -5,7 +5,8 @@
 		},
      "top_2":{
 		"label":"Pause",
-		"macro":"Pause game"
+		"macro":"Pause game",
+		"color":"amber"
 		},
      "top_3":{
 		"label":"Sys Msg",
@@ -17,7 +18,8 @@
 		},
      "top_5":{
 		"label":"Quit",
-		"macro":"Quit mission"
+		"macro":"Quit mission",
+		"color":"red"
 		},
      "left_1":{
 		"label":"Shield +",
@@ -77,6 +79,7 @@
 		},
      "bottom_5":{
 		"label":"ACK",
-		"macro":"Confirm critical orders"
+		"macro":"Confirm critical orders",
+		"color":"green"
 		}
 }

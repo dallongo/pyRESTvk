@@ -1,4 +1,5 @@
 {
+    "name":"X-Wing Alliance",
     "macros":[
         {
             "keys":"f1",
@@ -468,6 +469,5 @@
             "keys":"[ alt e ]",
             "name":"Eject"
         }
-    ],
-    "name":"X-Wing Alliance"
+    ]
 }
