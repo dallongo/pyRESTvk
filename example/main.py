@@ -70,7 +70,7 @@ class MFD(FloatLayout):
         r = self.s.post(configs_url, json=self.config, params={'validate_only':'true'}, timeout=5)
         if r.status_code != 200:
             print r.json()['message']
-            exit(1)
+            sys.exit(1)
         r = self.s.get(configs_url, timeout=5)
         # find and update config if it exists
         c = filter(lambda x: x['name'] == self.config['name'], r.json()['configs'])
@@ -112,7 +112,7 @@ class MFDApp(App):
         settings_file = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]),settings_file))
         if not os.path.isfile(settings_file) or not os.path.getsize(settings_file) > 0:
             print "Error: File Not Found: '%s'" % settings_file
-            exit(1)
+            sys.exit(1)
 
         # read settings from file
         f = open(settings_file)
@@ -123,7 +123,7 @@ class MFDApp(App):
         for k in ['mappings_file', 'config_file', 'auth_file', 'server_url']:
             if k not in settings:
                 print "Error: Missing Key '%s' in '%s'" % (k, settings_file)
-                exit(1)
+                sys.exit(1)
 
         # resolve file paths
         for k in settings:
@@ -131,7 +131,7 @@ class MFDApp(App):
                 settings[k] = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]),settings[k]))
                 if not os.path.isfile(settings[k]) or not os.path.getsize(settings[k]) > 0:
                     print "Error: File Not Found: '%s'"
-                    exit(1)
+                    sys.exit(1)
 
         return MFD(**settings)
 
