@@ -1,4 +1,5 @@
 {
+    "name":"unit testing",
     "macros":[
         {
             "keys":"n o t e p a d period e x e enter",
@@ -28,6 +29,5 @@
             "keys":"[ lshift t ] h i s space i s space a n space [ rshift quote ] e x a m p l e [ rshift quote ] [ lshift 1 ]",
             "name":"type sentence"
         }
-    ],
-    "name":"unit testing"
+    ]
 }

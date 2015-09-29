@@ -6,7 +6,7 @@
 # a change in application['version'] will suffice.
 
 import requests
-import socket
+import platform
 import json
 import time
 import copy
@@ -15,9 +15,9 @@ import copy
 server_ip = '127.0.0.1'
 server_port = 5000
 # testing for this API version
-api_version = 1
+api_version = '1.1'
 # pass hostname as username
-username = socket.getfqdn()
+username = platform.node()
 # get password from key file
 f = open('.auth_key')
 password = f.readline().rstrip()
@@ -34,7 +34,7 @@ test_config = json.loads(f.read())
 f.close()
 # copy to test rename functionality
 test_config_2 = copy.deepcopy(test_config)
-test_config_2['name'] += ' #2'
+test_config_2['name'] += ' 2'
 # copy to test syntax verification
 test_config_bad = copy.deepcopy(test_config)
 test_config_bad['macros'][0]['keys'] += ' ['
@@ -102,7 +102,7 @@ assert r.status_code == 405
 r = s.delete(configs_url)
 assert r.status_code == 405
 # verify config syntax validation
-r = s.post(configs_url, json=test_config_bad)
+r = s.post(configs_url, json=test_config_bad, params={'validate_only':'true'})
 assert r.status_code == 400
 print r.json()['message']
 # create new test config
