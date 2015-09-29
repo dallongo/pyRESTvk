@@ -130,7 +130,7 @@ class MFDApp(App):
             if k.endswith('_file'):
                 settings[k] = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]),settings[k]))
                 if not os.path.isfile(settings[k]) or not os.path.getsize(settings[k]) > 0:
-                    print "Error: File Not Found: '%s'"
+                    print "Error: File Not Found: '%s'" % settings[k]
                     sys.exit(1)
 
         return MFD(**settings)
