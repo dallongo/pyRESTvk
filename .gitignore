@@ -1,4 +1,4 @@
 .auth_key
 .configs
-example/.auth_key
-unit-test/.auth_key
+.settings
+*/.auth_key

@@ -14,15 +14,27 @@ It's meant to be run on a local network without access to the Internet. I've onl
 
 Macros are not checked for correct syntax when they are executed since the original purpose of the service is to simulate input for a low-latency game program. The macros are validated when the configs are read from disk, written to disk, uploaded from the client, or updated. By the time a macro is executed it should have passed validation at least twice.
 
-There is no exception handling for disk I/O errors and since documentation is sparse on win32api.keybd_event, there are no checks to see that the keystroke was successfully generated. The included test script will launch notepad and type a sentence, then cut and paste it, then quit notepad without saving changes. It provides a decent visual check that all pertinent keyboard macro types are functioning and will also check for proper HTTP responses for various REST calls.
+There is no exception handling for disk I/O errors and since documentation is sparse on `win32api.keybd_event`, there are no checks to see that the keystroke was successfully generated. The included test script will launch notepad and type a sentence, then cut and paste it, then quit notepad without saving changes. It provides a decent visual check that all pertinent keyboard macro types are functioning and will also check for proper HTTP responses for various REST calls.
 
 The service only uses basic HTTP authentication with no form of sessionization or cookies. The clients are not required to register at the `/auth` resource but it is helpful as it populates the client list on `/clients`.
 
-Windows does not allow sending protected commands like `[ CTRL ALT DEL ]` or `[ WIN L ]` to lock the station over the the win32api object.
+Windows does not allow sending protected commands like `[ CTRL ALT DEL ]` or `[ WIN L ]` to lock the station over the the `win32api` object.
 
 Please note that `config` and `macro` names cannot include HTTP [reserved] characters.
 
 ### Releases
+#### 0.6.0
+Increment API version to '1.1'
+Add helpful error messages when config fails validation
+Add on-demand config validation with POST `/configs?validate_only=true`
+Add settings file functionality for `server.py`
+Allow specifying alternate settings file for `server.py` and `example/main.py`
+Update `example/main.py` and `unit-test/unit-test.py` to use new `validate_only` feature
+Add custom color functionality to `example/settings.json`
+Move `server.py` globals and start up tasks to `setup()`
+Fix error in `unit-test/unit-test.py` where config name was using HTTP reserved character `#`
+Add `example/mfd.spec` to allow `example/main.py` to compile with `pyinstaller`
+
 #### 0.5.2
 Testing script and json moved to `unit-test/`
 Changed `__file__` references to `sys.argv[0]` so that `server.py` will compile with `py2exe`
@@ -66,15 +78,16 @@ The service provides the following endpoints:
 
 The service uses the following files:
 
+* `key_codes.json` - list of all valid keys for macros. service will fail if it does not exist.
 * `.auth_key` - the HTTP authentication password. will be auto-generated on start up if it does not exist.
 * `.configs` - server's persistent cache of configs. will be created on the first config written to disk if it does not exist.
-* `key_codes.json` - list of all valid keys for macros. service will fail if it does not exist.
+* `.settings` - specifies service port, listening IP, locations for all needed files, combo delimiters, and keystroke duration. will be auto-generated on start up with defaults if it does not exist. can be overridden by specifying different file as commandline argument (ie, `python server.py /some/other/path/settings.filename`).
 
 See `unit-test/unit-test.json` for a sample configuration with macros. Note that spaces are required between each token and between braces denoting button combination groups. Nesting groups is not permitted.
 
 A typical client application using [kivy] as a frontend is available in `example/`.
 
-Compiled binaries are available for releases but generally these are untested and messy, use at your own risk. Running `server.exe` will start the service on the default port (5000) and start listening on all available network interfaces.
+Compiled binaries are available for releases but generally these are untested and messy, use at your own risk. Running `server.exe` will start the service on the default port (5000) and start listening on all available network interfaces (0.0.0.0).
 
 ### Justification
 
