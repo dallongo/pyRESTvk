@@ -24,31 +24,35 @@ Please note that `config` and `macro` names cannot include HTTP [reserved] chara
 
 ### Releases
 #### 0.6.0
-Increment API version to '1.1'
-Add helpful error messages when config fails validation
-Add on-demand config validation with POST `/configs?validate_only=true`
-Add settings file functionality for `server.py`
-Allow specifying alternate settings file for `server.py` and `example/main.py`
-Update `example/main.py` and `unit-test/unit-test.py` to use new `validate_only` feature
-Add custom color functionality to `example/settings.json`
-Move `server.py` globals and start up tasks to `setup()`
-Fix error in `unit-test/unit-test.py` where config name was using HTTP reserved character `#`
-Add `example/mfd.spec` to allow `example/main.py` to compile with `pyinstaller`
+
+* Increment API version to '1.1'
+* Add helpful error messages when config fails validation
+* Add on-demand config validation with POST `/configs?validate_only=true`
+* Add settings file functionality for `server.py`
+* Allow specifying alternate settings file for `server.py` and `example/main.py`
+* Update `example/main.py` and `unit-test/unit-test.py` to use new `validate_only` feature
+* Add custom color functionality to `example/settings.json`
+* Move `server.py` globals and start up tasks to `setup()`
+* Fix error in `unit-test/unit-test.py` where config name was using HTTP reserved character `#`
+* Add `example/mfd.spec` to allow `example/main.py` to compile with `pyinstaller`
 
 #### 0.5.2
-Testing script and json moved to `unit-test/`
-Changed `__file__` references to `sys.argv[0]` so that `server.py` will compile with `py2exe`
-Added `setup.py` to allow `server.py` to compile with `py2exe`
-Cleanup `example/main.py` and move button labels from `MFD.kv` to `mapping_file`
-Various minor cosmetic changes
-First binary release for compiled `server.py` and `example/main.py`
+
+* Testing script and json moved to `unit-test/`
+* Changed `__file__` references to `sys.argv[0]` so that `server.py` will compile with `py2exe`
+* Added `setup.py` to allow `server.py` to compile with `py2exe`
+* Cleanup `example/main.py` and move button labels from `MFD.kv` to `mapping_file`
+* Various minor cosmetic changes
+* First binary release for compiled `server.py` and `example/main.py`
 
 #### 0.5.1
-Fixed `key_codes` not initialized before `read_configs` in `server.py`
-Added example kivy app in `example/`
+
+* Fixed `key_codes` not initialized before `read_configs` in `server.py`
+* Added example kivy app in `example/`
 
 #### 0.5
-Initial release
+
+* Initial release
 
 ### Installation
 
