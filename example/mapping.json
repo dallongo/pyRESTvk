@@ -1,0 +1,30 @@
+{
+     "btn_01":{
+		"label":"run-dialog",
+		"macro":"run-dialog"
+		},
+     "btn_02":{
+		"label":"type notepad",
+		"macro":"type notepad"
+		},
+     "btn_03":{
+		"label":"type sentence",
+		"macro":"type sentence"
+		},
+     "btn_04":{
+		"label":"cut-paste",
+		"macro":"cut-paste"
+		},
+     "btn_05":{
+		"label":"file-menu",
+		"macro":"file-menu"
+		},
+     "btn_08":{
+		"label":"alt-tab",
+		"macro":"alt-tab"
+        },
+     "btn_11":{
+		"label":"desktop",
+		"macro":"desktop"
+		}
+}

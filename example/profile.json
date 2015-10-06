@@ -1,0 +1,11 @@
+{
+    "unit-test":{
+        "type notepad":"n o t e p a d period e x e enter",
+        "run-dialog":"[ lwin r ]",
+        "alt-tab":"[ lalt tab ]",
+        "desktop":"[ lalt lshift tab ]",
+        "cut-paste":"[ lctrl a ] [ lctrl x ] enter enter [ lctrl v ]",
+        "file-menu":"[ lalt f ] x n",
+        "type sentence":"[ lshift t ] h i s space i s space a n space [ rshift quote ] e x a m p l e [ rshift quote ] [ lshift 1 ]"
+    }
+}

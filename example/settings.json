@@ -1,12 +1,6 @@
 {
 	"server_url" : "http://127.0.0.1:5000",
-	"auth_file" : ".auth_key",
-	"mappings_file" : "XWA/mapping.json",
-	"config_file" : "XWA/config.json",
-	"colors" : {
-		"white" : [1, 1, 1, 1],
-		"green" : [0, 1, 0, 1],
-		"red" : [1, 0, 0, 1],
-		"amber" : [0.95, 0.45, 0.05, 1]
-	}
+	"auth_key" : "",
+	"mappings" : "mapping.json",
+	"profile" : "profile.json"
 }
