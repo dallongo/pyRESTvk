@@ -10,23 +10,22 @@ from requests import Session, adapters
 from distutils.version import LooseVersion
 import json
 import platform
-import os.path
+import os
 import sys
 
-api_version = '1.1'
+api_version = '2.0'
 
-class MFD(FloatLayout):
-    def __init__(self, mappings_file, config_file, auth_file, server_url, colors={}, **kwargs):
+class SwitchPanel(FloatLayout):
+    def __init__(self, mappings, profile, auth_key, server_url, colors={}, **kwargs):
         global api_version
         FloatLayout.__init__(self)
         # load the kivy button mappings for the macros
-        f = open(mappings_file)
-        self.mappings = json.loads(f.read())
-        f.close()
-        # load the macro config for this application
-        f = open(config_file)
-        self.config = json.loads(f.read())
-        f.close()
+        with open(mappings) as f:
+        	self.mappings = json.load(f)
+        # load the macro profile for this application
+        with open(profile) as f:
+	        p = json.load(f)
+        k = p.keys()[0]
         # apply button labels, colors, and macros
         for i, b in self.mappings.iteritems():
             if i in self.ids:
@@ -34,7 +33,7 @@ class MFD(FloatLayout):
                     self.ids[i].text = b['label']
                 if 'color' in b and b['color'] in colors:
                     self.ids[i].color = colors[b['color']]
-                if 'macro' in b and filter(lambda m: m['name'] == b['macro'], self.config['macros']):
+                if 'macro' in b and b['macro'] in p[k]:
                     self.ids[i].bind(on_press=self.make_request)
                 if 'background_down' in dir(self.ids[i]):
                     if 'background_down' in b:
@@ -43,19 +42,12 @@ class MFD(FloatLayout):
                         self.ids[i].background_down = 'atlas://data/images/defaulttheme/button_disabled'
         # pass hostname as username
         username = platform.node()
-        # get password from key file
-        f = open(auth_file)
-        password = f.readline().rstrip()
-        f.close()
-        # session will send auth and headers for requests, retry up to 3x
+        # set password to auth key
+    	password = auth_key
+        # session will send auth for requests, retry up to 3x
         self.s = Session()
         self.s.mount("http://", adapters.HTTPAdapter(max_retries=3))
         self.s.auth=(username, password)
-        self.s.headers.update({
-            'X-Requested-With':'XMLHttpRequest',
-            'Accept':'application/json',
-            'Content-Type':'application/json'
-        })
         self.server_url = server_url
         # authenticate and register client
         r = self.s.get(self.server_url + '/auth', timeout=5)
@@ -65,28 +57,27 @@ class MFD(FloatLayout):
         assert LooseVersion(str(r.json()['application']['api'])) >= LooseVersion(str(api_version))
         # get resource URLs
         r = self.s.get(self.server_url, timeout=5)
-        configs_url = r.json()['configs']['url']
-        # validate config
-        r = self.s.post(configs_url, json=self.config, params={'validate_only':'true'}, timeout=5)
+        profiles_url = r.json()['profiles']['url']
+        # validate profile
+        r = self.s.post(profiles_url, files={k:open(profile, 'rb')}, params={'validate_only':'true'}, timeout=5)
         if r.status_code != 200:
             print r.json()['message']
             sys.exit(1)
-        r = self.s.get(configs_url, timeout=5)
-        # find and update config if it exists
-        c = filter(lambda x: x['name'] == self.config['name'], r.json()['configs'])
-        config_url = ''
-        if c:
-            c = c.pop()
-            config_url = c['url']
-            r = self.s.get(config_url, timeout=5)
-            if r.json() != self.config:
-                r = self.s.put(config_url, json=self.config, timeout=5)
+        r = self.s.get(profiles_url, timeout=5)
+        # find and update profile if it exists
+        profiles = r.json()
+        profile_url = ''
+        if k in profiles:
+            profile_url = profiles[k]['url']
+            r = self.s.get(profile_url, timeout=5)
+            if r.json() != p:
+                r = self.s.put(profile_url, files={k:open(profile, 'rb')}, timeout=5)
                 assert r.status_code == 204
         else:
-            r = self.s.post(configs_url, json=self.config, timeout=5)
+            r = self.s.post(profiles_url, files={k:open(profile, 'rb')}, timeout=5)
             assert r.status_code == 201
-            config_url = r.headers['location']
-        self.config_url = config_url
+            profile_url = r.headers['location']
+        self.profile_url = profile_url
         return
 
     def shutdown(self):
@@ -98,42 +89,52 @@ class MFD(FloatLayout):
         for i, w in self.ids.iteritems():
             if w == btn and i in self.mappings:
                 # run macro
-                r = self.s.get(self.config_url + '/macros/' + self.mappings[i]['macro'], timeout=5)
+                r = self.s.get(self.profile_url + '/' + self.mappings[i]['macro'], timeout=5)
                 assert r.status_code == 200
         return
 
 
-class MFDApp(App):
-    def build(self):
-        settings_file = 'settings.json'
-        # get client settings from command line arg
+class defaultApp(App):
+    def __init__(self):
+    	# search in local path to script, first
+        settings_file = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), 'settings.json'))
+        # commandline arg should be relative to current working directory
         if len(sys.argv) == 2:
-            settings_file = sys.argv[1]
-        settings_file = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]),settings_file))
+            settings_file = os.path.abspath(os.path.join(os.getcwd(), os.path.expandvars(sys.argv[1])))
         if not os.path.isfile(settings_file) or not os.path.getsize(settings_file) > 0:
             print "Error: File Not Found: '%s'" % settings_file
             sys.exit(1)
 
         # read settings from file
-        f = open(settings_file)
-        settings = json.loads(f.read())
-        f.close()
+        with open(settings_file) as f:
+	        settings = json.load(f)
 
         # check all needed settings keys exist
-        for k in ['mappings_file', 'config_file', 'auth_file', 'server_url']:
+        for k in ['mappings', 'profile', 'auth_key', 'server_url']:
             if k not in settings:
                 print "Error: Missing Key '%s' in '%s'" % (k, settings_file)
                 sys.exit(1)
 
-        # resolve file paths
+        # resolve file paths relative to settings file
         for k in settings:
-            if k.endswith('_file'):
-                settings[k] = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]),settings[k]))
+            if k in ['mappings', 'profile', 'kv_file']:
+                settings[k] = os.path.abspath(os.path.join(os.path.dirname(settings_file), os.path.expandvars(settings[k])))
                 if not os.path.isfile(settings[k]) or not os.path.getsize(settings[k]) > 0:
                     print "Error: File Not Found: '%s'" % settings[k]
                     sys.exit(1)
 
-        return MFD(**settings)
+        # set kv_file if override exists
+        k = settings.pop('kv_file', None)
+        if k:
+        	self.kv_file = k
+        self.settings = settings
+
+        # our init is done, call parent class init to finish
+        App.__init__(self)
+        return
+
+    def build(self):
+        return SwitchPanel(**self.settings)
 
     def on_stop(self):
         self.root.shutdown()
@@ -141,4 +142,4 @@ class MFDApp(App):
 
 
 if __name__ == '__main__':
-    MFDApp().run()
+    defaultApp().run()
