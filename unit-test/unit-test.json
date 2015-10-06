@@ -1,33 +1,11 @@
 {
-    "name":"unit testing",
-    "macros":[
-        {
-            "keys":"n o t e p a d period e x e enter",
-            "name":"type notepad"
-        },
-        {
-            "keys":"[ lwin r ]",
-            "name":"run-dialog"
-        },
-        {
-            "keys":"[ lalt tab ]",
-            "name":"alt-tab"
-        },
-        {
-            "keys":"[ lalt lshift tab ]",
-            "name":"desktop"
-        },
-        {
-            "keys":"[ lctrl a ] [ lctrl x ] enter enter [ lctrl v ]",
-            "name":"cut-paste"
-        },
-        {
-            "keys":"[ lalt f ] x n",
-            "name":"file-menu"
-        },
-        {
-            "keys":"[ lshift t ] h i s space i s space a n space [ rshift quote ] e x a m p l e [ rshift quote ] [ lshift 1 ]",
-            "name":"type sentence"
-        }
-    ]
+    "unit-test":{
+        "type notepad":"n o t e p a d period e x e enter",
+        "run-dialog":"[ lwin r ]",
+        "alt-tab":"[ lalt tab ]",
+        "desktop":"[ lalt lshift tab ]",
+        "cut-paste":"[ lctrl a ] [ lctrl x ] enter enter [ lctrl v ]",
+        "file-menu":"[ lalt f ] x n",
+        "type sentence":"[ lshift t ] h i s space i s space a n space [ rshift quote ] e x a m p l e [ rshift quote ] [ lshift 1 ]"
+    }
 }
