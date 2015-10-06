@@ -5,9 +5,9 @@
 # Using basic HTTP authentication with no WWW authentication challenge as browsers
 # are not the target client. Valid key codes are loaded from external file.
 
-from flask import Flask, url_for, redirect, abort, request, jsonify, make_response
+from flask import Flask, url_for, redirect, abort, request, jsonify, make_response, send_file
 from werkzeug.exceptions import default_exceptions, HTTPException
-import os.path
+import os
 import random
 import datetime
 import socket
@@ -16,125 +16,112 @@ import win32api
 import win32con
 import time
 import sys
+from distutils.dir_util import mkpath
+from distutils.version import LooseVersion
+import StringIO
 
 # server changes that affect endpoint functionality or break test script should increment api version.
-app_version = '0.6.0'
-api_version = '1.1'
+app_version = '0.7.1-beta'
+api_version = '2.0'
 
-# checks for auth key and creates one if needed.
-def read_auth_key(key_file):
-	key = None
-	if os.path.isfile(key_file) and os.path.getsize(key_file) > 0:
-		f  = open(key_file)
-		key = f.readline().rstrip()
-		f.close()
-	if not key:
-		print "File Not Found: Creating '%s'" % key_file
-		key = '-'.join([str(int(random.random()*1000)) for i in xrange(4)])
-		f = open(key_file,'w')
-		f.write(key)
-		f.close()
-	return key
+# generates new auth key if needed.
+def generate_auth_key():
+	return '-'.join([str(int(random.random()*1000)) for i in xrange(4)])
 
-# validates config schema.
-def validate_config(config):
+# validates profile schema.
+def validate_profile(k, p):
 	global key_codes, key_combo_seps
-	http_reserved = ["!", "*", "'", "(", ")", ";", ":", "@", "&", "=", "+", "$", ",", "/", "?", "#", "[", "]"]
-	if 'name' not in config: 
-		return False, "Config Missing Key: 'name'"
-	if not config['name']: 
-		return False, "Config Empty Key: 'name'"
+	http_reserved = "!*'();:@&=+$,/?#[]"
 	for c in http_reserved:
-		if c in config['name']:
-			return False, "Invalid Character: '%s' in Config 'name' %s'" % (c, config['name'])
-	if 'macros' not in config:
-		return False, "Config Missing Key: 'macros' for Config '%s'" % config['name']
-	if not config['macros']:
-		return False, "Config Empty Key: 'macros' for Config '%s'" % config['name']
-	for m in config['macros']:
-		if 'name' not in m:
-			return False, "Macro Missing Key: 'name' for Config '%s'" % config['name']
-		if not m['name']:
-			return False, "Macro Empty Key: 'name' for Config '%s'" % config['name']
+		if c in k:
+			return False, "Invalid Character: '{0}' in Profile 'name' {1}'".format(c, k)
+	if not p.keys():
+		return False, "Profile Empty: No Macros for Profile '{0}'".format(k)
+	for n, m in p.iteritems():
 		for c in http_reserved:
-			if c in m['name']:
-				return False, "Invalid Character: '%s' in Macro 'name' '%s' for Config '%s'" % (c, m['name'], config['name'])
-		if 'keys' not in m:
-			return False, "Macro Missing Key: 'keys' in Macro '%s' for Config '%s'" % (m['name'], config['name'])
-		if not m['keys']:
-			return False, "Macro Empty Key: 'keys' in Macro '%s' for Config '%s'" % (m['name'], config['name'])
-		if [x['name'] for x in config['macros']].count(m['name']) > 1:
-			return False, "Duplicate Macro: '%s' Exists for Config '%s'" % (m['name'], config['name'])
+			if c in n:
+				return False, "Invalid Character: '{0}' in Macro 'name' '{1}' for Profile '{2}'".format(c, n, k)
+		if not m:
+			return False, "Macro Empty: No Keys in Macro '{0}' for Profile '{1}'".format(n, k)
 		combo = []
 		open_combo = False
-		for k in m['keys'].split():
-			if k not in key_codes and k not in [key_combo_seps['open'], key_combo_seps['close']]:
-				return False, "Invalid Key Code: '%s' in Macro '%s' for Config '%s'" % (k, m['name'], config['name'])
-			if k == key_combo_seps['open']:
+		for key in m.split():
+			if key not in key_codes and key not in [key_combo_seps['open'], key_combo_seps['close']]:
+				return False, "Invalid Key Code: '{0}' in Macro '{1}' for Profile '{2}'".format(key, n, k)
+			if key == key_combo_seps['open']:
 				if open_combo:
-					return False, "Invalid Combo: Nested '%s' in Macro '%s' for Config '%s'" % (key_combo_seps['open'], m['name'], config['name'])
+					return False, "Invalid Combo: Nested '{0}' in Macro '{1}' for Profile '{2}'".format(key_combo_seps['open'], n, k)
 				open_combo = True
 				continue
-			if k == key_combo_seps['close']:
+			if key == key_combo_seps['close']:
 				if not open_combo:
-					return False, "Invalid Combo: '%s' Before '%s' in Macro '%s' for Config '%s'" % (key_combo_seps['close'], key_combo_seps['open'], m['name'], config['name'])
+					return False, "Invalid Combo: '{0}' Before '{1}' in Macro '{2}' for Profile '{3}'".format(key_combo_seps['close'], key_combo_seps['open'], n, k)
 				open_combo = False
 			if open_combo:
-				combo.append(key_codes[k])
+				combo.append(key_codes[key])
 				continue
 			if combo:
 				combo = []
 		if open_combo or combo:
-			return False, "Invalid Combo: '%s' Without '%s' in Macro '%s' for Config '%s'" % (key_combo_seps['open'], key_combo_seps['close'], m['name'], config['name'])
+			return False, "Invalid Combo: '{0}' Without '{1}' in Macro '{2}' for Profile '{3}'".format(key_combo_seps['open'], key_combo_seps['close'], n, k)
 	return True, "OK"
 
-# writes validated configs to file.
-def write_configs(configs, configs_file):
-	to_disk = []
-	for c in configs:
-		validated, msg = validate_config(c)
+# writes validated profiles to file.
+def write_profiles(profiles, profiles_db, json_args):
+	to_disk = {}
+	for k, p in profiles.iteritems():
+		validated, msg = validate_profile(k, p)
 		if not validated:
-			print "Discarding Config: %s" % msg
+			print "Discarding Profile: {0}".format(msg)
 			continue
-		to_disk.append(c)
-	f = open(configs_file,'w')
-	f.write(json.dumps(to_disk, indent=4, separators=(',',':'), sort_keys=True))
-	f.close()
+		to_disk[k] = p
+	mkpath(os.path.dirname(profiles_db))
+	with open(profiles_db,'w') as f:
+		json.dump(to_disk, f, **json_args)
 	return
 
-# reads validated configs from file.
-def read_configs(configs_file):
-	configs = []
-	if os.path.isfile(configs_file) and os.path.getsize(configs_file) > 0:
-		f  = open(configs_file)
-		from_disk = json.loads(f.read())
-		f.close()
-		for c in from_disk:
-			validated, msg = validate_config(c)
+# reads validated profiles from file.
+def read_profiles(profiles_db):
+	profiles = {}
+	if os.path.isfile(profiles_db) and os.path.getsize(profiles_db) > 0:
+		with open(profiles_db) as f:
+			from_disk = json.load(f)
+		for k, p in from_disk.iteritems():
+			validated, msg = validate_profile(k, p)
 			if not validated:
-				print "Discarding Config: %s" % msg
+				print "Discarding Profile: {0}".format(msg)
 				continue
-			configs.append(c)
-	return configs
+			profiles[k] = p
+	return profiles
 
 # reads key codes from file.
 def read_key_codes(codes_file):
-	codes = None
 	if not os.path.isfile(codes_file) or not os.path.getsize(codes_file) > 0:
-		print "Error: File Not Found: '%s'" % codes_file
+		print "Error: File Not Found: '{0}'".format(codes_file)
 		sys.exit(1)
-	f  = open(codes_file)
-	codes = json.loads(f.read())
-	f.close()
-	return codes
+	with open(codes_file) as f:
+		return json.load(f)
 
 # simulate key presses for given key codes.
 def press_keys(duration, keys=[]):
+	eventf = {
+		'keydn' : 0,
+		'keye0' : 1,
+		'keyup' : 2,
+		'keyuc' : 4,
+		'keyhw' : 8
+	}
 	for k in keys:
-		win32api.keybd_event(k, 0, win32con.KEYEVENTF_EXTENDEDKEY | 0, 0)
+		flags = eventf['keyhw'] + eventf['keydn']
+		if k['e0'] == 1:
+			flags += eventf['keye0']
+		win32api.keybd_event(0, k['sc'], flags, 0)
 	time.sleep(duration)
 	for k in keys:
-		win32api.keybd_event(k, 0, win32con.KEYEVENTF_EXTENDEDKEY | win32con.KEYEVENTF_KEYUP, 0)
+		flags = eventf['keyhw'] + eventf['keyup']
+		if k['e0'] == 1:
+			flags += eventf['keye0']
+		win32api.keybd_event(0, k['sc'], flags, 0)
 	return
 
 # checks for HTTP auth info in request.
@@ -146,6 +133,7 @@ def authorized():
 
 
 app = Flask(__name__)
+app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 
 def make_json_error(ex):
 	response = jsonify(message=str(ex))
@@ -157,12 +145,13 @@ def make_json_error(ex):
 for code in default_exceptions.iterkeys():
 	app.error_handler_spec[None][code] = make_json_error
 
-# root is readable to all and gives server status with clients and configs summary.
+# root is readable to all and gives server status with clients and profiles summary.
 @app.route('/')
 def server_status():
-	global status, configs, clients
+	global status, profiles, clients, key_codes
 	status['clients'] = {'url':url_for('client_list', _external=True), 'count':len(clients)}
-	status['configs'] = {'url':url_for('register_config', _external=True), 'count':len(configs)}
+	status['profiles'] = {'url':url_for('register_profile', _external=True), 'count':len(profiles)}
+	status['key_codes'] = {'url':url_for('select_key_codes', _external=True), 'count':len(key_codes)}
 	return jsonify(status)
 
 # adds authenticated client to list. not strictly necessary to perform authenticated tasks.
@@ -171,12 +160,9 @@ def register_client():
 	global clients
 	if not authorized():
 		abort(401)
-	client = {}
-	client['name'] = request.authorization.username
-	client['address'] = request.remote_addr
-	if not filter(lambda c: c['name'] == client['name'] and c['address'] == client['address'], clients):
-		client['since'] = datetime.datetime.now()
-		clients.append(client)
+	name = request.authorization.username
+	if name not in clients:
+		clients[name] = {'address':request.remote_addr, 'since':datetime.datetime.now()}
 	return jsonify(message='OK')
 
 # performs immediate shutdown.
@@ -191,85 +177,88 @@ def server_shutdown():
 @app.route('/clients')
 def client_list():
 	global clients
-	return jsonify(clients=[dict(c, url = url_for('select_client', name=c['name'], _external=True)) for c in clients])
+	return jsonify(clients)
 
-# lookup client by name. read-only.
-@app.route('/clients/<name>')
-def select_client(name):
-	global clients
-	client = filter(lambda c: c['name'] == name, clients)
-	if not client:
-		abort(404)
-	client = client.pop()
-	return jsonify(client)
-
-# list all configs this server knows about and allow adding new ones.
-@app.route('/configs', methods=['GET','POST'])
-def register_config():
-	global configs, configs_file
+# list all profiles this server knows about and allow adding new ones.
+@app.route('/profiles', methods=['GET','POST'])
+def register_profile():
+	global profiles, profiles_db, json_args
 	if request.method == 'GET':
-		return jsonify(configs=[{'name':x['name'], 'url':url_for('select_config', name=x['name'], _external=True), 'macros':len(x['macros'])} for x in configs])
+		# client requested to download a copy of the entire server cache using /profiles?send_file=true
+		if request.args.get('send_file', '').lower() == 'true':
+			return send_file(profiles_db, as_attachment=True, attachment_filename=os.path.basename(profiles_db))
+		out = {}
+		for k, p in profiles.iteritems():
+			out[k] = {'url':url_for('select_profile', name=k, _external=True), 'macros':len(p)}
+		return jsonify(out)
 	if not authorized():
 		abort(401)
-	config = request.json
-	validated, msg = validate_config(config)
+	# allow clients to send profile data as file
+	if request.files:
+		profile = json.loads(request.files[request.files.keys()[0]].read())
+	else:
+		profile = request.json
+	k, p = next(profile.iteritems())
+	validated, msg = validate_profile(k, p)
 	if not validated:
 		return make_response(jsonify(message=msg), 400)
-	# allow clients to validate config data without altering server cache using /configs?validate_only=true
+	# allow clients to validate profile data without altering server cache using /profiles?validate_only=true
 	if request.args.get('validate_only', '').lower() == 'true':
 		return jsonify(message=msg)
-	if filter(lambda c: c['name'] == config['name'], configs):
-		return make_response(jsonify(message="Duplicate Entry: 'name' '%s' Exists" % config['name']), 409)
-	configs.append(config)
-	write_configs(configs, configs_file)
-	return make_response(jsonify(url=url_for('select_config', name=config['name'], _external=True)), 201, {'Location':url_for('select_config', name=config['name'])})
+	if k in profiles:
+		return make_response(jsonify(message="Duplicate Entry: Profile '{0}' Exists".format(k)), 409)
+	profiles[k] = p
+	write_profiles(profiles, profiles_db, json_args)
+	return make_response(jsonify(url=url_for('select_profile', name=k, _external=True)), 201, {'Location':url_for('select_profile', name=k)})
 
-# retrieve config in format that is acceptable to post back as new after delete. allow put for updates.
-@app.route('/configs/<name>', methods=['GET','PUT','DELETE'])
-def select_config(name):
-	global configs, configs_file
-	config = filter(lambda c: c['name'] == name, configs)
-	if not config:
+# retrieve profile in format that is acceptable to post back as new after delete. allow put for updates.
+@app.route('/profiles/<name>', methods=['GET','PUT','DELETE'])
+def select_profile(name):
+	global profiles, profiles_db, json_args
+	if name not in profiles:
 		abort(404)
-	config = config.pop()
 	if request.method == 'GET':
-		return jsonify(config)
+		p = {name:profiles[name]}
+		# client requested to download a copy of the profile as file using /profiles/<name>?send_file=true
+		if request.args.get('send_file', '').lower() == 'true':
+			return send_file(StringIO.StringIO(json.dumps(p, **json_args)), as_attachment=True, attachment_filename=name + '.json')
+		return jsonify(p)
 	if not authorized():
 		abort(401)
 	if request.method == 'DELETE':
-		configs.remove(config)
-		write_configs(configs, configs_file)
+		profiles.pop(name, None)
+		write_profiles(profiles, profiles_db, json_args)
 		return make_response('', 204)
-	x = request.json
-	validated, msg = validate_config(x)
+	# allow clients to send profile data as file
+	if request.files:
+		x = json.loads(request.files[request.files.keys()[0]].read())
+	else:
+		x = request.json
+	k, p = next(x.iteritems())
+	validated, msg = validate_profile(k, p)
 	if not validated:
 		return make_response(jsonify(message=msg), 400)
-	if x['name'] != name and filter(lambda c: c['name'] == x['name'], configs):
-		return make_response(jsonify(message="Duplicate Entry: 'name' '%s' Exists" % x['name']), 409)
-	configs.remove(config)
-	configs.append(x)
-	write_configs(configs, configs_file)
-	if x['name'] != name:
-		return make_response(jsonify(url=url_for('select_config', name=x['name'], _external=True)), 201, {'Location':url_for('select_config', name=x['name'])})
+	if k != name and k in profiles:
+		return make_response(jsonify(message="Duplicate Entry: Profile '{0}' Exists".format(k)), 409)
+	profiles.pop(name, None)
+	profiles[k] = p
+	write_profiles(profiles, profiles_db, json_args)
+	if k != name:
+		return make_response(jsonify(url=url_for('select_profile', name=k, _external=True)), 201, {'Location':url_for('select_profile', name=k)})
 	return make_response('', 204)
 
 # authenticated execution of macro key sequences. minimal validation since it should have passed validation twice by now.
-@app.route('/configs/<config_name>/macros/<name>')
-def select_macro(config_name, name):
-	global configs, key_codes, key_duration, key_combo_seps
+@app.route('/profiles/<name>/<macro>')
+def select_macro(name, macro):
+	global profiles, key_codes, key_duration, key_combo_seps
 	if not authorized():
 		abort(401)
-	config = filter(lambda c: c['name'] == config_name, configs)
-	if not config:
+	if name not in profiles or macro not in profiles[name]:
 		abort(404)
-	config = config.pop()
-	macro = filter(lambda m: m['name'] == name, config['macros'])
-	if not macro:
-		abort(404)
-	macro = macro.pop()
+	m = profiles[name][macro]
 	combo = []
 	open_combo = False
-	for k in macro['keys'].split():
+	for k in m.split():
 		if k == key_combo_seps['open']:
 			open_combo = True
 			continue
@@ -286,54 +275,62 @@ def select_macro(config_name, name):
 		time.sleep(key_duration)
 	return jsonify(message='OK')
 
+# list all valid key codes.
+@app.route('/key_codes')
+def select_key_codes():
+	global key_codes, json_args
+	# client requested to download a copy of the key codes file using /key_codes?send_file=true
+	if request.args.get('send_file', '').lower() == 'true':
+		return send_file(StringIO.StringIO(json.dumps(key_codes, **json_args)), as_attachment=True, attachment_filename='key_codes.json')
+	return jsonify(key_codes)
+
 
 def setup():
 	global app_version, api_version
-	global status, clients, auth_key, key_codes, key_duration, key_combo_seps, configs, configs_file
+	global status, clients, auth_key
+	global key_codes, key_duration, key_combo_seps
+	global profiles, profiles_db, json_args
 
 	defaults = {
 		'ip':'0.0.0.0',
 		'port':5000,
-		'auth_file':'.auth_key',
-		'configs_file':'.configs',
-		'key_codes_file':'key_codes.json',
+		'auth_key':generate_auth_key(),
+		'profiles_db':'profiles.json',
 		'key_duration':0.025,
 		'key_combo_seps':{'open':'[', 'close':']'}
 	}
 
-	settings_file = '.settings'
-	# get server settings from command line arg
+	json_args = {'indent':4, 'separators':(',',':'), 'sort_keys':True}
+
+	# search for settings in local path to script
+	settings_file = os.path.abspath(os.path.expandvars('$APPDATA/pyRESTvk-server/settings.json'))
+	# commandline args relative to current working directory
 	if len(sys.argv) == 2:
-		settings_file = sys.argv[1]
-	settings_file = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]),settings_file))
+		settings_file = os.path.abspath(os.path.join(os.getcwd(), os.path.expandvars(sys.argv[1])))
 
 	# write defaults to disk if no file
+	mkpath(os.path.dirname(settings_file))
 	if not os.path.isfile(settings_file) or not os.path.getsize(settings_file) > 0:
-		print "File Not Found: Creating '%s'" % settings_file
-		f = open(settings_file, 'w')
-		f.write(json.dumps({}))
-		f.close()
+		print "File Not Found: Creating '{0}'".format(settings_file)
+		with open(settings_file, 'w') as f:
+			json.dump(defaults, f, **json_args)
 	
 	# read settings from file
-	f = open(settings_file)
-	settings = json.loads(f.read())
-	f.close()
+	with open(settings_file) as f:
+		settings = json.load(f)
 
 	# check all needed settings keys exist, add missing settings
 	for k in defaults:
 		if k not in settings:
-			print "Key Not Found: Adding '%s' to '%s'" % (k, settings_file)
+			print "Key Not Found: Adding '{0}' to '{1}'".format(k, settings_file)
 			settings[k] = defaults[k]
-			f = open(settings_file, 'w')
-			f.write(json.dumps(settings, indent=4, separators=(',',':'), sort_keys=True))
-			f.close()
+			with open(settings_file, 'w') as f:
+				json.dump(settings, f, **json_args)
 
-	# resolve file paths
-	for k in settings:
-		if k.endswith('_file'):
-			settings[k] = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]),settings[k]))
+	# resolve profile file path relative to settings file
+	settings['profiles_db'] = os.path.abspath(os.path.join(os.path.dirname(settings_file), os.path.expandvars(settings['profiles_db'])))
 
-	# server status and clients/configs summary.
+	# server status.
 	status = {
 		'application':{
 			'name':os.path.basename(sys.argv[0]),
@@ -345,22 +342,20 @@ def setup():
 			'address':socket.gethostbyname(socket.getfqdn()),
 			'port':settings['port'],
 			'up-since':datetime.datetime.now()
-		},
-		'clients':[],
-		'configs':[]
+		}
 	}
 
-	clients = []
+	clients = {}
 
-	auth_key = read_auth_key(settings['auth_file'])
+	auth_key = settings['auth_key']
 
-	key_codes = read_key_codes(settings['key_codes_file'])
+	key_codes = read_key_codes(os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), 'key_codes.json')))
 	key_duration = settings['key_duration']
 	key_combo_seps = settings['key_combo_seps']
 
-	# key_.* globals must be populated before configs can be loaded
-	configs_file = settings['configs_file']
-	configs = read_configs(configs_file)
+	# key_.* globals must be populated before profiles can be loaded
+	profiles_db = settings['profiles_db']
+	profiles = read_profiles(profiles_db)
 
 	return {'host':settings['ip'], 'port':settings['port']}
 
