@@ -3,14 +3,14 @@ import os
 install_hooks(globals())
 # -*- mode: python -*-
 a = Analysis(['pyRESTvk\\example\\main.py'],
-             pathex=['\\mfd'],
+             pathex=['\\switch_panel'],
              hiddenimports=[],
              runtime_hooks=None)
 pyz = PYZ(a.pure)
 exe = EXE(pyz,
           a.scripts,
           exclude_binaries=True,
-          name='mfd.exe',
+          name='switch_panel.exe',
           debug=False,
           strip=None,
           upx=True,
@@ -23,4 +23,4 @@ coll = COLLECT(exe,
                a.datas,
                strip=None,
                upx=True,
-               name='mfd')
+               name='switch_panel')
