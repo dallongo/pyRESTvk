@@ -114,7 +114,7 @@ Compiled binaries are available for releases but generally these are untested an
 
 ### Justification
 
-I wrote this service to familiarize myself with REST interface principles using the Flask framework. It serves as a way for me to send keyboard commands from my tablet to my desktop while playing flight simulators to manipulate the instrumentation. While many "serious" simulators already have interfaces like this (such as DCS-BIOS for the DCS series), I mostly play X-Wing Alliance and Mechwarrior 2 so I needed a more direct keyboard approach. This service might be useful for other such older games or situations where one needs to simulate keystrokes.
+I wrote this service to familiarize myself with REST interface principles using the Flask framework. It serves as a way for me to send keyboard commands from my tablet to my desktop while playing flight simulators to manipulate the instrumentation. While many "serious" simulators already have interfaces like this, I mostly play X-Wing Alliance and Mechwarrior 2 so I needed a more direct keyboard approach. This service might be useful for other such older games or situations where one needs to simulate keystrokes.
 
 ### Acknowledgments
 
@@ -127,6 +127,18 @@ The following code snippets and web pages were helpful in writing pyRESTvk:
 * [Shutdown The Simple Server] [shutdown-snippet] for the werkzeug shutdown endpoint
 * [Specialized JSON-oriented Flask App] [json-snippet] for the JSON HTTP exception code messages
 * [HTTP Basic Auth] [auth-snippet] for the HTTP authentication wrapper
+
+### Other/Similar Solutions
+
+For the sake of completeness, I've compiled a non-exhaustive list of other software packages that tackle similar problems. Many of the following projects are either closed-source, platform-specific, sim-specific, or abandoned:
+
+* [DCS-BIOS] provides a stable, documented interface for external hardware and software to interact with the clickable cockpit of a DCS aircraft
+* [UltraMFCD] app for DCS that extracts aircraft diplays and presents them as normal windows which can be dragged around and resized as the user desires
+* [Helios] integration package which connects your touch screen to your simulation, turning it into a fully functional glass cockpit
+* [GPT] streams Falcon4 BMS cockpit displays to remote rendering computers and forwards emulated keyboard input from one computer to another
+* [TouchBuddy] lightweight windows application that provides a GUI for users to interface with games via a touchscreen
+* [Power-Grid] fully-customizable remote control for your PC lets you connect to, monitor, and control your PC and games directly from your smartphone 
+* [LuaMacros] active development, open-source, sim-agnostic, keyboard macro scripting with network interface
 
 
 
@@ -142,3 +154,10 @@ The following code snippets and web pages were helpful in writing pyRESTvk:
 [msdn-keybd_event]: <https://msdn.microsoft.com/en-us/library/windows/desktop/ms646304(v=vs.85).aspx>
 [msdn-keybdinput]: <https://msdn.microsoft.com/en-us/library/windows/desktop/ms646271(v=vs.85).aspx>
 [kb-scancodes]: <https://www.win.tue.nl/~aeb/linux/kbd/scancodes-10.html>
+[DCS-BIOS]: <http://dcs-bios.a10c.de/>
+[UltraMFCD]: <https://ultramfcd.com/>
+[Helios]: <http://www.gadrocsworkshop.com/helios>
+[GPT]: <https://github.com/GiGurra/gpt>
+[TouchBuddy]: <http://touch-buddy.com/forums/index.php>
+[Power-Grid]: <http://www.roccat.org/en-US/Products/Gaming-Software/Power-Grid/Home/>
+[LuaMacros]: <http://www.hidmacros.eu/forum/viewtopic.php?f=10&t=241>
