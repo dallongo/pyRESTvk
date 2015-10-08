@@ -13,15 +13,16 @@ import datetime
 import socket
 import json
 import win32api
-import win32con
 import time
 import sys
 from distutils.dir_util import mkpath
 from distutils.version import LooseVersion
 import StringIO
+from collections import namedtuple
+import logging, logging.handlers
 
 # server changes that affect endpoint functionality or break test script should increment api version.
-app_version = '0.7.1-beta'
+app_version = '0.7.2-beta'
 api_version = '2.0'
 
 # generates new auth key if needed.
@@ -68,11 +69,12 @@ def validate_profile(k, p):
 
 # writes validated profiles to file.
 def write_profiles(profiles, profiles_db, json_args):
+	global logger_name
 	to_disk = {}
 	for k, p in profiles.iteritems():
 		validated, msg = validate_profile(k, p)
 		if not validated:
-			print "Discarding Profile: {0}".format(msg)
+			logging.getLogger(logger_name).warning("Discarding Profile: {0}".format(msg))
 			continue
 		to_disk[k] = p
 	mkpath(os.path.dirname(profiles_db))
@@ -82,6 +84,7 @@ def write_profiles(profiles, profiles_db, json_args):
 
 # reads validated profiles from file.
 def read_profiles(profiles_db):
+	global logger_name
 	profiles = {}
 	if os.path.isfile(profiles_db) and os.path.getsize(profiles_db) > 0:
 		with open(profiles_db) as f:
@@ -89,38 +92,33 @@ def read_profiles(profiles_db):
 		for k, p in from_disk.iteritems():
 			validated, msg = validate_profile(k, p)
 			if not validated:
-				print "Discarding Profile: {0}".format(msg)
+				logging.getLogger(logger_name).warning("Discarding Profile: {0}".format(msg))
 				continue
 			profiles[k] = p
 	return profiles
 
 # reads key codes from file.
 def read_key_codes(codes_file):
+	global logger_name
 	if not os.path.isfile(codes_file) or not os.path.getsize(codes_file) > 0:
-		print "Error: File Not Found: '{0}'".format(codes_file)
+		logging.getLogger(logger_name).error("Error: File Not Found: '{0}'".format(codes_file))
 		sys.exit(1)
 	with open(codes_file) as f:
 		return json.load(f)
 
 # simulate key presses for given key codes.
 def press_keys(duration, keys=[]):
-	eventf = {
-		'keydn' : 0,
-		'keye0' : 1,
-		'keyup' : 2,
-		'keyuc' : 4,
-		'keyhw' : 8
-	}
+	global KEYEVENTF
 	for k in keys:
-		flags = eventf['keyhw'] + eventf['keydn']
+		flags = KEYEVENTF.SCANCODE | KEYEVENTF.KEYDOWN
 		if k['e0'] == 1:
-			flags += eventf['keye0']
+			flags |= KEYEVENTF.EXTENDEDKEY
 		win32api.keybd_event(0, k['sc'], flags, 0)
 	time.sleep(duration)
 	for k in keys:
-		flags = eventf['keyhw'] + eventf['keyup']
+		flags = KEYEVENTF.SCANCODE | KEYEVENTF.KEYUP
 		if k['e0'] == 1:
-			flags += eventf['keye0']
+			flags |= KEYEVENTF.EXTENDEDKEY
 		win32api.keybd_event(0, k['sc'], flags, 0)
 	return
 
@@ -290,6 +288,8 @@ def setup():
 	global status, clients, auth_key
 	global key_codes, key_duration, key_combo_seps
 	global profiles, profiles_db, json_args
+	global KEYEVENTF
+	global logger_name
 
 	defaults = {
 		'ip':'0.0.0.0',
@@ -302,7 +302,18 @@ def setup():
 
 	json_args = {'indent':4, 'separators':(',',':'), 'sort_keys':True}
 
-	# search for settings in local path to script
+	# create log, set to rotate at 1MB
+	logger_name = 'werkzeug'
+	log_file = os.path.abspath(os.path.expandvars('$APPDATA/pyRESTvk-server/server.log'))
+	mkpath(os.path.dirname(log_file))
+	h = logging.handlers.RotatingFileHandler(filename=log_file, maxBytes=1024*1024, backupCount=9)
+	h.setLevel(logging.INFO)
+	l = logging.getLogger(logger_name)
+	l.addHandler(h)
+	l.setLevel(logging.INFO)
+	l.info('-' * 25 + ' ' + str(datetime.datetime.now()) + ' ' + '-' * 25)
+
+	# search for settings in %APPDATA% first
 	settings_file = os.path.abspath(os.path.expandvars('$APPDATA/pyRESTvk-server/settings.json'))
 	# commandline args relative to current working directory
 	if len(sys.argv) == 2:
@@ -311,7 +322,7 @@ def setup():
 	# write defaults to disk if no file
 	mkpath(os.path.dirname(settings_file))
 	if not os.path.isfile(settings_file) or not os.path.getsize(settings_file) > 0:
-		print "File Not Found: Creating '{0}'".format(settings_file)
+		l.warning("File Not Found: Creating '{0}'".format(settings_file))
 		with open(settings_file, 'w') as f:
 			json.dump(defaults, f, **json_args)
 	
@@ -321,8 +332,8 @@ def setup():
 
 	# check all needed settings keys exist, add missing settings
 	for k in defaults:
-		if k not in settings:
-			print "Key Not Found: Adding '{0}' to '{1}'".format(k, settings_file)
+		if k not in settings or not settings[k]:
+			l.warning("Key Not Found: Adding '{0}' to '{1}'".format(k, settings_file))
 			settings[k] = defaults[k]
 			with open(settings_file, 'w') as f:
 				json.dump(settings, f, **json_args)
@@ -348,7 +359,8 @@ def setup():
 	clients = {}
 
 	auth_key = settings['auth_key']
-
+	# flags used by keybd_event
+	KEYEVENTF = namedtuple('KEYBDINPUT_FLAGS', 'KEYDOWN, EXTENDEDKEY, KEYUP, UNICODE, SCANCODE')(*[int(2**x) for x in xrange(-1,4)])
 	key_codes = read_key_codes(os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), 'key_codes.json')))
 	key_duration = settings['key_duration']
 	key_combo_seps = settings['key_combo_seps']

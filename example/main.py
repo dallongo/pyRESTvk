@@ -12,6 +12,8 @@ import json
 import platform
 import os
 import sys
+from kivy.config import Config
+from kivy.logger import Logger
 
 api_version = '2.0'
 
@@ -61,7 +63,7 @@ class SwitchPanel(FloatLayout):
         # validate profile
         r = self.s.post(profiles_url, files={k:open(profile, 'rb')}, params={'validate_only':'true'}, timeout=5)
         if r.status_code != 200:
-            print r.json()['message']
+            Logger.error(r.json()['message'])
             sys.exit(1)
         r = self.s.get(profiles_url, timeout=5)
         # find and update profile if it exists
@@ -102,7 +104,7 @@ class defaultApp(App):
         if len(sys.argv) == 2:
             settings_file = os.path.abspath(os.path.join(os.getcwd(), os.path.expandvars(sys.argv[1])))
         if not os.path.isfile(settings_file) or not os.path.getsize(settings_file) > 0:
-            print "Error: File Not Found: '%s'" % settings_file
+            Logger.error("File Not Found '{0}'".format(settings_file))
             sys.exit(1)
 
         # read settings from file
@@ -112,7 +114,7 @@ class defaultApp(App):
         # check all needed settings keys exist
         for k in ['mappings', 'profile', 'auth_key', 'server_url']:
             if k not in settings:
-                print "Error: Missing Key '%s' in '%s'" % (k, settings_file)
+                Logger.error("Missing Key '{0}' in '{1}'".format(k, settings_file))
                 sys.exit(1)
 
         # resolve file paths relative to settings file
@@ -120,7 +122,7 @@ class defaultApp(App):
             if k in ['mappings', 'profile', 'kv_file']:
                 settings[k] = os.path.abspath(os.path.join(os.path.dirname(settings_file), os.path.expandvars(settings[k])))
                 if not os.path.isfile(settings[k]) or not os.path.getsize(settings[k]) > 0:
-                    print "Error: File Not Found: '%s'" % settings[k]
+                    Logger.error("File Not Found '{0}'".format(settings[k]))
                     sys.exit(1)
 
         # set kv_file if override exists
@@ -142,4 +144,5 @@ class defaultApp(App):
 
 
 if __name__ == '__main__':
+    Config.setall('kivy', {'log_level':'info', 'log_enable':1, 'log_dir':os.path.dirname(sys.argv[0]), 'log_name':'client.log'})
     defaultApp().run()
