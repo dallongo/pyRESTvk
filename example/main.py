@@ -12,8 +12,8 @@ import json
 import platform
 import os
 import sys
-from kivy.config import Config
 from kivy.logger import Logger
+import logging, logging.handlers
 
 api_version = '2.0'
 
@@ -144,5 +144,8 @@ class defaultApp(App):
 
 
 if __name__ == '__main__':
-    Config.setall('kivy', {'log_level':'info', 'log_enable':1, 'log_dir':os.path.dirname(sys.argv[0]), 'log_name':'client.log'})
+    h = logging.handlers.RotatingFileHandler(filename=os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), 'client.log')), maxBytes=1024*1024, backupCount=9)
+    h.setLevel(logging.INFO)
+    Logger.addHandler(h)
+    Logger.setLevel(logging.INFO)
     defaultApp().run()
