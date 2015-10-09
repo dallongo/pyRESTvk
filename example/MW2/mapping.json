@@ -1,0 +1,95 @@
+{
+     "mfd_top_1":{
+		"label":"SYS ON",
+		"macro":"Startup Mech"
+		},
+     "mfd_top_2":{
+		"label":"SYS OFF",
+		"macro":"Shutdown Mech",
+		"color":"amber"
+		},
+     "mfd_left_1":{
+		"label":"OVR THERM",
+		"macro":"Override Shutdown",
+		"color":"green"
+		},
+     "mfd_left_2":{
+		"label":"DMP AMMO",
+		"macro":"Jettison Ammo",
+		"color":"amber"
+		},
+     "mfd_right_1":{
+		"label":"EJECT",
+		"macro":"Eject",
+		"color":"amber"
+		},
+     "mfd_right_2":{
+		"label":"DESTRUCT",
+		"macro":"Self-Destruct",
+		"color":"red"
+        },
+     "mfd_bottom_1":{
+		"label":"NAV PT",
+		"macro":"Next Nav Point"
+		},
+     "mfd_bottom_2":{
+		"label":"AUTO PLT",
+		"macro":"Toggle Auto Pilot",
+		"color":"green"
+		},
+     "menus_1":{
+		"label":"MAIN",
+		"macro":"Main Menu"
+		},
+     "menus_2":{
+		"label":"STATUS",
+		"macro":"User Menu"
+		},
+     "menus_3":{
+		"label":"PAUSE",
+		"macro":"Pause Game",
+		"color":"amber"
+		},
+     "menus_4":{
+		"label":"ABORT",
+		"macro":"Quit Mission",
+		"color":"red"
+		},
+     "views_1_1":{
+		"label":"RDR MODE",
+		"macro":"Next Radar Mode"
+		},
+     "views_1_2":{
+		"label":"RDR Z+",
+		"macro":"Radar Zoom In",
+		"color":"amber"
+		},
+     "views_2_1":{
+		"label":"RDR",
+		"macro":"Radar Map Toggle",
+		"color":"green"
+		},
+     "views_2_2":{
+		"label":"RDR Z-",
+		"macro":"Radar Zoom Out",
+		"color":"amber"
+		},
+     "views_3_1":{
+		"label":"MFD",
+		"macro":"MFD Cycle",
+		"color":"green"
+		},
+     "views_3_2":{
+		"label":"DMG",
+		"macro":"Toggle Damage Display"
+		},
+     "views_4_1":{
+		"label":"HUD",
+		"macro":"Toggle HUD",
+		"color":"green"
+		},
+     "views_4_2":{
+		"label":"HTAL",
+		"macro":"Toggle HTAL"
+		}
+}
