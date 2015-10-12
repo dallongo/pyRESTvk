@@ -20,10 +20,11 @@ from distutils.version import LooseVersion
 import StringIO
 from collections import namedtuple
 import logging, logging.handlers
+import locale
 
 # server changes that affect endpoint functionality or break test script should increment api version.
-app_version = '0.7.2-beta'
-api_version = '2.0'
+app_version = '0.8.0-beta'
+api_version = '2.1'
 
 # generates new auth key if needed.
 def generate_auth_key():
@@ -107,19 +108,21 @@ def read_key_codes(codes_file):
 		return json.load(f)
 
 # simulate key presses for given key codes.
-def press_keys(duration, keys=[]):
+def press_keys(duration, keys=[], press=True, release=True):
 	global KEYEVENTF
-	for k in keys:
-		flags = KEYEVENTF.SCANCODE | KEYEVENTF.KEYDOWN
-		if k['e0'] == 1:
-			flags |= KEYEVENTF.EXTENDEDKEY
-		win32api.keybd_event(0, k['sc'], flags, 0)
-	time.sleep(duration)
-	for k in keys:
-		flags = KEYEVENTF.SCANCODE | KEYEVENTF.KEYUP
-		if k['e0'] == 1:
-			flags |= KEYEVENTF.EXTENDEDKEY
-		win32api.keybd_event(0, k['sc'], flags, 0)
+	if press:
+		for k in keys:
+			flags = KEYEVENTF.SCANCODE | KEYEVENTF.KEYDOWN
+			if k['e0'] == 1:
+				flags |= KEYEVENTF.EXTENDEDKEY
+			win32api.keybd_event(0, k['sc'], flags, 0)
+		time.sleep(duration)
+	if release:
+		for k in keys:
+			flags = KEYEVENTF.SCANCODE | KEYEVENTF.KEYUP
+			if k['e0'] == 1:
+				flags |= KEYEVENTF.EXTENDEDKEY
+			win32api.keybd_event(0, k['sc'], flags, 0)
 	return
 
 # checks for HTTP auth info in request.
@@ -185,10 +188,7 @@ def register_profile():
 		# client requested to download a copy of the entire server cache using /profiles?send_file=true
 		if request.args.get('send_file', '').lower() == 'true':
 			return send_file(profiles_db, as_attachment=True, attachment_filename=os.path.basename(profiles_db))
-		out = {}
-		for k, p in profiles.iteritems():
-			out[k] = {'url':url_for('select_profile', name=k, _external=True), 'macros':len(p)}
-		return jsonify(out)
+		return jsonify({k:{'url':url_for('select_profile', name=k, _external=True), 'macros':len(profiles[k])} for k in profiles})
 	if not authorized():
 		abort(401)
 	# allow clients to send profile data as file
@@ -248,15 +248,35 @@ def select_profile(name):
 # authenticated execution of macro key sequences. minimal validation since it should have passed validation twice by now.
 @app.route('/profiles/<name>/<macro>')
 def select_macro(name, macro):
-	global profiles, key_codes, key_duration, key_combo_seps
+	global profiles, key_codes, key_duration, key_combo_seps, held_macros
+	global logger_name
 	if not authorized():
 		abort(401)
 	if name not in profiles or macro not in profiles[name]:
 		abort(404)
-	m = profiles[name][macro]
+	m = profiles[name][macro].split()
+	press = True
+	release = True
+	if m in held_macros:
+		press = False
+	# client requested 'press and hold' using ?hold=true
+	if request.args.get('hold', '').lower() == 'true':
+		if (len(m) == 1 or
+			(m.count(key_combo_seps['open']) == 1 and
+			m[0] == key_combo_seps['open'] and
+			m.count(key_combo_seps['close']) == 1 and
+			m[-1] == key_combo_seps['close'])):
+			release = False
+			if press:
+				held_macros.append(m)
+		else:
+			# only allow 'press and hold' if macro is single combo or single key press
+			logging.getLogger(logger_name).warning("Disregarding 'hold' Request for Macro {0} in Profile {1}".format(macro, name))
+	if release and not press:
+		held_macros.remove(m)
 	combo = []
 	open_combo = False
-	for k in m.split():
+	for k in m:
 		if k == key_combo_seps['open']:
 			open_combo = True
 			continue
@@ -266,10 +286,10 @@ def select_macro(name, macro):
 			combo.append(key_codes[k])
 			continue
 		if combo:
-			press_keys(key_duration, combo)
+			press_keys(key_duration, combo, press, release)
 			combo = []
 		else:
-			press_keys(key_duration, [key_codes[k]])
+			press_keys(key_duration, [key_codes[k]], press, release)
 		time.sleep(key_duration)
 	return jsonify(message='OK')
 
@@ -288,8 +308,11 @@ def setup():
 	global status, clients, auth_key
 	global key_codes, key_duration, key_combo_seps
 	global profiles, profiles_db, json_args
-	global KEYEVENTF
+	global KEYEVENTF, held_macros
 	global logger_name
+
+	# set locale to user preference
+	locale.setlocale(locale.LC_ALL, '')
 
 	defaults = {
 		'ip':'0.0.0.0',
@@ -311,7 +334,7 @@ def setup():
 	l = logging.getLogger(logger_name)
 	l.addHandler(h)
 	l.setLevel(logging.INFO)
-	l.info('-' * 25 + ' ' + str(datetime.datetime.now()) + ' ' + '-' * 25)
+	l.info('-' * 25 + ' ' + datetime.datetime.now().strftime('%c') + ' ' + '-' * 25)
 
 	# search for settings in %APPDATA% first
 	settings_file = os.path.abspath(os.path.expandvars('$APPDATA/pyRESTvk-server/settings.json'))
@@ -325,7 +348,7 @@ def setup():
 		l.warning("File Not Found: Creating '{0}'".format(settings_file))
 		with open(settings_file, 'w') as f:
 			json.dump(defaults, f, **json_args)
-	
+
 	# read settings from file
 	with open(settings_file) as f:
 		settings = json.load(f)
@@ -352,7 +375,7 @@ def setup():
 			'name':socket.getfqdn(),
 			'address':socket.gethostbyname(socket.getfqdn()),
 			'port':settings['port'],
-			'up-since':datetime.datetime.now()
+			'up-since':datetime.datetime.now().strftime('%c')
 		}
 	}
 
@@ -364,10 +387,14 @@ def setup():
 	key_codes = read_key_codes(os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), 'key_codes.json')))
 	key_duration = settings['key_duration']
 	key_combo_seps = settings['key_combo_seps']
+	held_macros = []
 
 	# key_.* globals must be populated before profiles can be loaded
 	profiles_db = settings['profiles_db']
 	profiles = read_profiles(profiles_db)
+
+	# dump status info to console
+	print json.dumps(status, **json_args)
 
 	return {'host':settings['ip'], 'port':settings['port']}
 
