@@ -1,4 +1,4 @@
-# pyRESTvk/unit-test.py
+# pyRESTvk/unit-test/unit-test.py
 # Dan Allongo (daniel.s.allongo@gmail.com)
 
 # Changes to the server must not break this script. Server changes that require
@@ -15,7 +15,7 @@ import copy
 server_ip = '127.0.0.1'
 server_port = 5000
 # testing for this API version
-api_version = '2.0'
+api_version = '2.1'
 # pass hostname as username
 username = platform.node()
 # http password
@@ -118,8 +118,19 @@ assert r.status_code == 200
 time.sleep(0.25)
 r = s.get(profile_url + '/cut-paste')
 assert r.status_code == 200
-# visually verify output
+# visually verify output for 'press and hold' functionality
 time.sleep(0.25)
+r = s.get(profile_url + '/a', params={'hold':'true'})
+assert r.status_code == 200
+time.sleep(1)
+r = s.get(profile_url + '/a')
+assert r.status_code == 200
+time.sleep(0.25)
+r = s.get(profile_url + '/B', params={'hold':'true'})
+assert r.status_code == 200
+time.sleep(1)
+r = s.get(profile_url + '/B')
+assert r.status_code == 200
 # exit notepad
 r = s.get(profile_url + '/file-menu')
 assert r.status_code == 200
