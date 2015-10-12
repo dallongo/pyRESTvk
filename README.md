@@ -6,9 +6,9 @@ pyRESTvk is built on Python 2.7 using [Flask] for the web service and [pywin32] 
 
 ### Disclaimer and Caveats
 
-As with anything that controls/emulates input devices, running this service can be considered a security hazard. 
+As with anything that controls/emulates input devices, running this service can be considered a security hazard.
 
-This is a lightweight service with only minimal validation checks and error handling. It assumes that the client will work with JSON and ignores Accept headers for HTML or XML. 
+This is a lightweight service with only minimal validation checks and error handling. It assumes that the client will work with JSON and ignores Accept headers for HTML or XML.
 
 It's meant to be run on a local network without access to the Internet. I've only tested the service on Windows 7 and Windows 8.1 as these are the machines I had in mind for this service. I don't know if it works on Windows XP or Windows 10. After the client has finished making all its requests, it should call for the service to shutdown otherwise the service will listen indefinitely.
 
@@ -18,11 +18,20 @@ There is no exception handling for disk I/O errors and since documentation is sp
 
 The service only uses basic HTTP authentication with no form of sessionization or cookies. The clients are not required to register at the `/auth` resource but it is helpful as it populates the client list on `/clients`.
 
-Windows does not allow sending protected commands like `[ CTRL ALT DEL ]` or `[ WIN L ]` to lock the station over the the `win32api` object.
+Windows 8 does not allow sending protected commands like `[ CTRL ALT DEL ]` or `[ WIN L ]` to lock the station over the the `win32api` object unless the manifest specifies `uiAccess=true` in `requestedPrivileges` and the executable has been signed.
 
 Please note that `profile` and `macro` names cannot include HTTP [reserved] characters.
 
 ### Releases
+#### 0.8.0-beta
+
+* Add rotating log files to `server.py` and `example/main.py`
+* Add extra profile for `example/main.py`
+* Add `hold=true` parameter for macro execution to press and hold keys
+* Increment API version to '2.1'
+* Update `example/main.py` and `unit-test/unit-test.py` to use new API 2.1 features
+* Add `build.spec` for compiling `server.py` with `pyinstaller` instead of `py2exe`
+
 #### 0.7.1-beta
 
 * Switch from Virtual Keyboard key designations to hardware Set 1 scan codes
@@ -78,12 +87,15 @@ Please note that `profile` and `macro` names cannot include HTTP [reserved] char
 
 Use pip to install these packages and their dependencies on the Windows host:
 
-* flask
-* pypiwin32
+* flask-0.10.1
+* pypiwin32-219
+* PyInstaller-3.0 (needed for building standalone binary of server)
 
 Install these packages and their dependencies on the client:
 
-* requests
+* kivy-1.9.0 (needed for the client in `example/main.py`)
+* requests-2.7.0 (kivy ships with 2.6.0 which has issues when building standalone client)
+* PyInstaller-2.1 (needed for building standalone binary of client, kivy hooks not yet compatible with 3.0)
 
 ### Usage
 
@@ -94,10 +106,10 @@ The service provides the following endpoints:
 * `/` - server status and summary with URLs to available resources
 * `/auth` - entry point for authenticated clients to register with the server
 * `/clients` - list of authenticated clients with URLs for each client resource
-* `/profiles` - list of profiles with URLs for each profile resource
-* `/profiles/<name>` - exports this profile to the client
-* `/profiles/<name>/<macro>` - executes the stored macro
-* `/key_codes` - list of valid key names and scan codes
+* `/profiles` - list of profiles with URLs for each profile resource, accepts optional `validate_only=true` or `send_file=true` parameters
+* `/profiles/<name>` - exports this profile to the client, accepts optional `send_file=true` parameter
+* `/profiles/<name>/<macro>` - executes the stored macro, accepts optional `hold=true` parameter. macro is released on subsequent call without parameters
+* `/key_codes` - list of valid key names and scan codes, accepts optional `send_file=true` parameter
 * `/shutdown` - calls for service shutdown
 
 The service uses the following files:
@@ -105,6 +117,7 @@ The service uses the following files:
 * `key_codes.json` - list of all valid keys for macros. service will fail if it does not exist.
 * `profiles.json` - server's persistent cache of profiles. will be created on the first profile written to disk if it does not exist. stored in `%APPDATA%/pyRESTvk-server/` by default, can be overridden in `settings.json`
 * `settings.json` - specifies service port, listening IP, HTTP auth password, location for profile cache, combo delimiters, and keystroke duration. will be auto-generated on start up with defaults if it does not exist in `%APPDATA%/pyRESTvk-server/`. can be overridden by specifying different file as commandline argument (ie, `python server.py /some/other/path/settings.filename`).
+* `server.log` - stored in `%APPDATA/pyRESTvk-server/`, rotates at 1 MB, keeps last 9 rotated logs as `server.log.[1-9]`
 
 See `unit-test/unit-test.json` for a sample profile with macros. Note that spaces are required between each token and between brackets denoting button combination groups. Nesting groups is not permitted.
 
@@ -137,7 +150,7 @@ For the sake of completeness, I've compiled a non-exhaustive list of other softw
 * [Helios] integration package which connects your touch screen to your simulation, turning it into a fully functional glass cockpit
 * [GPT] streams Falcon4 BMS cockpit displays to remote rendering computers and forwards emulated keyboard input from one computer to another
 * [TouchBuddy] lightweight windows application that provides a GUI for users to interface with games via a touchscreen
-* [Power-Grid] fully-customizable remote control for your PC lets you connect to, monitor, and control your PC and games directly from your smartphone 
+* [Power-Grid] fully-customizable remote control for your PC lets you connect to, monitor, and control your PC and games directly from your smartphone
 * [LuaMacros] active development, open-source, sim-agnostic, keyboard macro scripting with network interface
 
 
