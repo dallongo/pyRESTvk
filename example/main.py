@@ -15,7 +15,7 @@ import sys
 from kivy.logger import Logger
 import logging, logging.handlers
 
-api_version = '2.0'
+api_version = '2.1'
 
 class SwitchPanel(FloatLayout):
     def __init__(self, mappings, profile, auth_key, server_url, colors={}, **kwargs):
@@ -53,10 +53,14 @@ class SwitchPanel(FloatLayout):
         self.server_url = server_url
         # authenticate and register client
         r = self.s.get(self.server_url + '/auth', timeout=5)
-        assert r.status_code == 200
+        if r.status_code != 200:
+            Logger.error('init: Unable to Authenticate: Expected Response Code 200, Got {0}'.format(r.status_code))
+            exit(1)
         # confirm server api version
         r = self.s.get(self.server_url, timeout=5)
-        assert LooseVersion(str(r.json()['application']['api'])) >= LooseVersion(str(api_version))
+        if LooseVersion(r.json()['application']['api']) < LooseVersion(api_version):
+            Logger.error('init: Incompatible Server: API version >= {0} Required'.format(api_version))
+            exit(1)
         # get resource URLs
         r = self.s.get(self.server_url, timeout=5)
         profiles_url = r.json()['profiles']['url']
@@ -74,10 +78,14 @@ class SwitchPanel(FloatLayout):
             r = self.s.get(profile_url, timeout=5)
             if r.json() != p:
                 r = self.s.put(profile_url, files={k:open(profile, 'rb')}, timeout=5)
-                assert r.status_code == 204
+                if r.status_code != 204:
+                    Logger.error('init: Unable to Update Profile: Expected Response Code 204, Got {0}'.format(r.status_code))
+                    exit(1)
         else:
             r = self.s.post(profiles_url, files={k:open(profile, 'rb')}, timeout=5)
-            assert r.status_code == 201
+            if r.status_code != 201:
+                Logger.error('init: Unable to Create Profile: Expected Response Code 201, Got {0}'.format(r.status_code))
+                exit(1)
             profile_url = r.headers['location']
         self.profile_url = profile_url
         return
@@ -90,9 +98,10 @@ class SwitchPanel(FloatLayout):
     def make_request(self, btn):
         for i, w in self.ids.iteritems():
             if w == btn and i in self.mappings:
+            	p = self.mappings[i].get('params', {})
                 # run macro
-                r = self.s.get(self.profile_url + '/' + self.mappings[i]['macro'], timeout=5)
-                assert r.status_code == 200
+                r = self.s.get(self.profile_url + '/' + self.mappings[i]['macro'], params=p, timeout=5)
+                Logger.info('make_request: {0} - {1} (in {2} sec)'.format(r.url, r.status_code, r.elapsed.total_seconds()))
         return
 
 
@@ -104,7 +113,7 @@ class defaultApp(App):
         if len(sys.argv) == 2:
             settings_file = os.path.abspath(os.path.join(os.getcwd(), os.path.expandvars(sys.argv[1])))
         if not os.path.isfile(settings_file) or not os.path.getsize(settings_file) > 0:
-            Logger.error("File Not Found '{0}'".format(settings_file))
+            Logger.error("init: File Not Found '{0}'".format(settings_file))
             sys.exit(1)
 
         # read settings from file
@@ -114,7 +123,7 @@ class defaultApp(App):
         # check all needed settings keys exist
         for k in ['mappings', 'profile', 'auth_key', 'server_url']:
             if k not in settings:
-                Logger.error("Missing Key '{0}' in '{1}'".format(k, settings_file))
+                Logger.error("init: Missing Key '{0}' in '{1}'".format(k, settings_file))
                 sys.exit(1)
 
         # resolve file paths relative to settings file
@@ -122,7 +131,7 @@ class defaultApp(App):
             if k in ['mappings', 'profile', 'kv_file']:
                 settings[k] = os.path.abspath(os.path.join(os.path.dirname(settings_file), os.path.expandvars(settings[k])))
                 if not os.path.isfile(settings[k]) or not os.path.getsize(settings[k]) > 0:
-                    Logger.error("File Not Found '{0}'".format(settings[k]))
+                    Logger.error("init: File Not Found '{0}'".format(settings[k]))
                     sys.exit(1)
 
         # set kv_file if override exists

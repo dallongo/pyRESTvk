@@ -19,12 +19,30 @@
 		"label":"file-menu",
 		"macro":"file-menu"
 		},
-     "btn_08":{
+     "btn_06":{
 		"label":"alt-tab",
 		"macro":"alt-tab"
         },
-     "btn_11":{
+     "btn_09":{
 		"label":"desktop",
 		"macro":"desktop"
+		},
+	"btn_07":{
+		"label":"a (hold)",
+		"macro":"a",
+		"params":{"hold":"true"}
+		},
+	"btn_08":{
+		"label":"a",
+		"macro":"a"
+		},
+	"btn_10":{
+		"label":"B (hold)",
+		"macro":"B",
+		"params":{"hold":"true"}
+		},
+	"btn_11":{
+		"label":"B",
+		"macro":"B"
 		}
 }
